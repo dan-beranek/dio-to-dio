@@ -176,7 +176,7 @@ def build_jsonld(config: dict, site_url: str, records: list, integrity_records: 
             "@id": dataset_id,
             "name": dataset_config["name"],
             "description": dataset_config["description"],
-            "url": site_url + "dataset.jsonld",
+            "url": site_url,
             "inLanguage": config["website"]["inLanguage"],
             "creator": person_ref,
             "publisher": person_ref,
