@@ -35,7 +35,8 @@ The project-level research question is:
 │   ├── brand/                 # Canonical DIO/ODI SVG files
 │   └── css/site.css
 ├── metadata/
-│   └── analyses.json          # Factual catalogue metadata
+│   ├── analyses.json          # Factual report catalogue
+│   └── structured-data.json   # Person, project, website, Dataset and DIO/ODI subjects
 ├── reports/
 │   ├── markdown/              # Nine original LLM reports
 │   └── pdf/                   # Nine original PDFs
