@@ -30,7 +30,7 @@ No ranking, scoring, shared finding taxonomy, or automatic meta-analysis is gene
 
 - The canonical person identifier is `https://danielberanek.cz/#person`.
 - The person's ORCID is linked through `sameAs`: `https://orcid.org/0009-0004-0050-0264`.
-- The portfolio is represented as a `ResearchProject`, with the person identified as its founder and maintainer.
+- The portfolio is represented as a `ResearchProject`, with the person identified as its founder. The person is also identified as publisher of the website and report pages.
 - The website and each report page reuse the same Person, WebSite, and ResearchProject identifiers.
 - Individual LLM outputs are represented as `CreativeWork` records. The person is identified as publisher/curator of the portfolio, not as the author of model-generated report text.
 - Observation snapshots are not converted into publication dates.
