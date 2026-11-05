@@ -43,6 +43,130 @@ def render_markdown(source: Path, filter_path: Path) -> str:
         fail(f"Pandoc produced empty HTML for {source.relative_to(ROOT)}")
     return result.stdout
 
+
+def validate_structured_data(config: dict) -> None:
+    person = config.get("person", {})
+    project = config.get("project", {})
+    website = config.get("website", {})
+    required_person_fields = ("@id", "@type", "name", "url", "sameAs")
+    if any(not person.get(key) for key in required_person_fields):
+        fail("metadata/structured-data.json has incomplete person identity metadata.")
+    if person["@type"] != "Person":
+        fail("The canonical author entity must use @type Person.")
+    if person["@id"] != "https://danielberanek.cz/#person":
+        fail("The canonical person @id must remain https://danielberanek.cz/#person.")
+    if "https://orcid.org/0009-0004-0050-0264" not in person["sameAs"]:
+        fail("The canonical person sameAs list must include the ORCID URI.")
+    if not project.get("name") or not project.get("description") or not project.get("sameAs"):
+        fail("metadata/structured-data.json has incomplete project metadata.")
+    if not website.get("name") or not website.get("description") or not website.get("inLanguage"):
+        fail("metadata/structured-data.json has incomplete website metadata.")
+
+def report_schema_nodes(record: dict, site_url: str, config: dict) -> tuple[dict, dict]:
+    page_url = urljoin(site_url, record["html"])
+    page_id = page_url + "#webpage"
+    work_id = page_url + "#report"
+    website_id = site_url + "#website"
+    project_id = site_url + "#project"
+    person_ref = {"@id": config["person"]["@id"]}
+    page = {
+        "@type": "WebPage",
+        "@id": page_id,
+        "url": page_url,
+        "name": record["title"],
+        "description": record["description"],
+        "inLanguage": config["website"]["inLanguage"],
+        "isPartOf": {"@id": website_id},
+        "mainEntity": {"@id": work_id}
+    }
+    work = {
+        "@type": "CreativeWork",
+        "@id": work_id,
+        "name": record["title"],
+        "description": record["description"],
+        "url": page_url,
+        "inLanguage": config["website"]["inLanguage"],
+        "isPartOf": {"@id": website_id},
+        "about": {"@id": project_id},
+        "publisher": person_ref,
+        "mainEntityOfPage": {"@id": page_id}
+    }
+    return page, work
+
+def build_jsonld(config: dict, site_url: str, records: list, current_record: dict | None = None) -> dict:
+    person = dict(config["person"])
+    website_id = site_url + "#website"
+    project_id = site_url + "#project"
+    person_ref = {"@id": person["@id"]}
+    website_ref = {"@id": website_id}
+    project_ref = {"@id": project_id}
+
+    graph = [
+        person,
+        {
+            "@type": "WebSite",
+            "@id": website_id,
+            "url": site_url,
+            "name": config["website"]["name"],
+            "description": config["website"]["description"],
+            "inLanguage": config["website"]["inLanguage"],
+            "publisher": person_ref
+        },
+        {
+            "@type": "ResearchProject",
+            "@id": project_id,
+            "name": config["project"]["name"],
+            "description": config["project"]["description"],
+            "url": site_url,
+            "sameAs": config["project"]["sameAs"],
+            "founder": person_ref,
+            "maintainer": person_ref
+        }
+    ]
+
+    if current_record is None:
+        report_pages = []
+        for record in records:
+            page, work = report_schema_nodes(record, site_url, config)
+            graph.extend([page, work])
+            report_pages.append({"@id": page["@id"]})
+        graph.append({
+            "@type": "CollectionPage",
+            "@id": site_url + "#webpage",
+            "url": site_url,
+            "name": config["website"]["name"],
+            "description": config["website"]["description"],
+            "inLanguage": config["website"]["inLanguage"],
+            "isPartOf": website_ref,
+            "mainEntity": project_ref,
+            "hasPart": report_pages,
+            "author": person_ref,
+            "publisher": person_ref
+        })
+    else:
+        page, work = report_schema_nodes(current_record, site_url, config)
+        graph.extend([page, work])
+
+    payload = {"@context": "https://schema.org", "@graph": graph}
+    # Validate serialization and graph identity before writing it into HTML.
+    serialized = json.dumps(payload, ensure_ascii=False)
+    parsed = json.loads(serialized)
+    ids = [node["@id"] for node in parsed["@graph"] if isinstance(node, dict) and node.get("@id")]
+    if len(ids) != len(set(ids)):
+        fail("Generated JSON-LD contains duplicate @id values in one graph.")
+    people = [node for node in parsed["@graph"] if node.get("@type") == "Person"]
+    if len(people) != 1 or people[0].get("@id") != config["person"]["@id"]:
+        fail("Generated JSON-LD does not contain exactly one canonical Person node.")
+    if "https://orcid.org/0009-0004-0050-0264" not in people[0].get("sameAs", []):
+        fail("Generated JSON-LD lost the canonical ORCID sameAs link.")
+    return parsed
+
+def jsonld_script(payload: dict) -> str:
+    serialized = json.dumps(payload, ensure_ascii=False, indent=2)
+    # Prevent a metadata string from prematurely closing the script element.
+    serialized = serialized.replace("</", "<\\/")
+    return '  <script type="application/ld+json">\n' + serialized + '\n  </script>\n'
+
 def card(record: dict, index: int, total: int) -> str:
     model = html.escape(record["model"])
     title = html.escape(record["title"])
@@ -57,14 +181,16 @@ def card(record: dict, index: int, total: int) -> str:
   <div class="analysis-card-links"><a href="{href}">Read HTML report</a><a href="{pdf_href}" download>Original PDF</a></div>
 </article>'''
 
-def report_page(record: dict, index: int, total: int, html_fragment: str, site_url: str) -> str:
+def report_page(record: dict, index: int, total: int, html_fragment: str, site_url: str, structured_data: dict) -> str:
     model = html.escape(record["model"])
     title = html.escape(record["title"])
     description = html.escape(record["description"])
     graph = html.escape(record["graph_approach"])
     prompt = html.escape(record["prompt_arrangement"])
     snapshot = html.escape(record["observation_snapshot"])
-    canonical = html.escape(urljoin(site_url, record["html"]), quote=True)
+    page_url = urljoin(site_url, record["html"])
+    canonical = html.escape(page_url, quote=True)
+    schema_markup = jsonld_script(build_jsonld(structured_data, site_url, [record], current_record=record))
     pdf_link = html.escape(f"../sources/pdf/{Path(record['pdf']).name}", quote=True)
     md_link = html.escape(f"../sources/markdown/{Path(record['markdown']).name}", quote=True)
     return f'''<!doctype html>
@@ -74,15 +200,16 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <meta name="description" content="{description}">
-  <meta name="author" content="Daniel Beránek">
   <meta property="og:type" content="article">
+  <meta property="og:url" content="{canonical}">
+  <meta property="og:site_name" content="DIO to DIO">
   <meta property="og:title" content="{title}">
   <meta property="og:description" content="{description}">
   <link rel="canonical" href="{canonical}">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="stylesheet" href="../assets/css/site.css">
   <title>{title} · DIO to DIO</title>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+{schema_markup}  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body class="report-page">
   <a class="skip-link" href="#report-content">Skip to report</a>
@@ -132,6 +259,8 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
 def main() -> None:
     metadata = json.loads((ROOT / "metadata" / "analyses.json").read_text(encoding="utf-8"))
     records = metadata.get("analyses", [])
+    structured_data = json.loads((ROOT / "metadata" / "structured-data.json").read_text(encoding="utf-8"))
+    validate_structured_data(structured_data)
     if len(records) != 9:
         fail(f"Expected 9 analyses in metadata, found {len(records)}")
 
@@ -185,7 +314,7 @@ def main() -> None:
             fail(f"Rendered page path must end in .html: {output_rel}")
         output_path = OUT / output_rel
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(report_page(record, index, len(records), fragment, site_url), encoding="utf-8")
+        output_path.write_text(report_page(record, index, len(records), fragment, site_url, structured_data), encoding="utf-8")
 
     index_html = (ROOT / "index.html").read_text(encoding="utf-8")
     if CATALOGUE_START not in index_html or CATALOGUE_END not in index_html:
@@ -193,6 +322,10 @@ def main() -> None:
     cards = "\n".join(card(record, index, len(records)) for index, record in enumerate(records, start=1))
     replacement = f"{CATALOGUE_START}\n<div class=\"analysis-grid\">\n{cards}\n</div>\n{CATALOGUE_END}"
     index_html = re.sub(re.escape(CATALOGUE_START) + r".*?" + re.escape(CATALOGUE_END), lambda _: replacement, index_html, flags=re.S)
+    home_schema = jsonld_script(build_jsonld(structured_data, site_url, records))
+    if "</head>" not in index_html:
+        fail("index.html is missing its closing head element.")
+    index_html = index_html.replace("</head>", home_schema + "</head>", 1)
     (OUT / "index.html").write_text(index_html, encoding="utf-8")
 
     (OUT / "source-integrity.json").write_text(json.dumps({
