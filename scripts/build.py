@@ -305,16 +305,18 @@ def build_dcat_exports(config: dict, site_url: str, records: list, integrity_rec
         f"  dcterms:description {ttl_literal(dataset['description'])} ;",
         f"  dcterms:creator <{person_id}> ;",
         f"  dcterms:publisher <{person_id}> ;",
+        "  dcterms:language <http://id.loc.gov/vocabulary/iso639-1/en> ;",
         f"  dcat:landingPage <{site_url}> ;",
+        "  dcat:keyword " + ", ".join(ttl_literal(keyword) for keyword in dataset["keywords"]) + " ;",
         "  dcat:theme " + ", ".join(f"<{uri}>" for uri in dataset["about"]) + " ;",
         "  dcat:distribution " + ",\n    ".join(
-            f"<{dataset_id}#distribution-{item['id']}>" for item in distributions
+            f"<{dataset_id}-distribution-{item['id']}>" for item in distributions
         ) + " .",
         ""
     ]
     for index, item in enumerate(distributions):
         lines.extend([
-            f"<{dataset_id}#distribution-{item['id']}> a dcat:Distribution ;",
+            f"<{dataset_id}-distribution-{item['id']}> a dcat:Distribution ;",
             f"  dcterms:title {ttl_literal(item['title'])} ;",
             f"  dcat:accessURL <{item['url']}> ;",
             f"  dcat:mediaType <{item['media_type_uri']}>"
