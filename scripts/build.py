@@ -259,7 +259,9 @@ def build_dcat_exports(config: dict, site_url: str, records: list, integrity_rec
         "dcterms:description": {"@value": dataset["description"], "@language": "en"},
         "dcterms:creator": {"@id": person_id},
         "dcterms:publisher": {"@id": person_id},
+        "dcterms:language": {"@id": "http://id.loc.gov/vocabulary/iso639-1/en"},
         "dcat:landingPage": {"@id": site_url},
+        "dcat:keyword": [{"@value": keyword, "@language": "en"} for keyword in dataset["keywords"]],
         "dcat:theme": [{"@id": uri} for uri in dataset["about"]],
         "dcat:distribution": [
             {"@id": dataset_id + "-distribution-" + item["id"]}
@@ -518,7 +520,7 @@ def main() -> None:
     llms_lines = [
         "# DIO to DIO", "",
         "A reflexive research portfolio examining how large language models reconstruct Digital Identity Optimization (DIO) and the Ontology of Digital Identity (ODI) when the framework is applied to its own distributed ecosystem.", "",
-        "The portfolio preserves nine independent reports. It does not rank, harmonize, or synthesize their interpretations. Report descriptions are factual catalogue metadata; each full report is rendered from its unchanged Markdown source, with original Markdown and PDF files available.", "",
+        "The portfolio preserves nine independent reports. It does not rank, harmonize, or synthesize their interpretations. Report descriptions are factual catalogue metadata; each report is available as unchanged Markdown and PDF sources plus a faithful HTML representation.", "",
         "## Project", f"- Home: {site_url}", "- Repository: https://github.com/dan-beranek/dio-to-dio", "",
         "## Machine-readable dataset metadata",
         f"- DCAT JSON-LD: {urljoin(site_url, 'dataset.jsonld')}",
