@@ -7,6 +7,7 @@ This repository already contains the nine original Markdown reports and their ni
 - Original Markdown: `reports/markdown/`
 - Original PDF: `reports/pdf/`
 - Factual report metadata: `metadata/analyses.json`
+- Canonical author, website, and project identity for JSON-LD: `metadata/structured-data.json`
 - Project landing-page template: `index.html`
 - Build script: `scripts/build.py`
 
@@ -37,6 +38,8 @@ The build stops if:
 - a Markdown/PDF filename pair does not match;
 - the files in the source folders do not match the catalogue inventory;
 - Pandoc or the source-preservation filter is unavailable.
+
+Before rendering, the build validates the canonical Person identifier and ORCID `sameAs` link in `metadata/structured-data.json`. It emits a consistent Schema.org graph on the landing page and each report page; do not hand-edit JSON-LD in generated HTML.
 
 The build then:
 - renders the Markdown source to HTML using Pandoc;
