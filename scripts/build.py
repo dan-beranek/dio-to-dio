@@ -519,7 +519,12 @@ def main() -> None:
         "# DIO to DIO", "",
         "A reflexive research portfolio examining how large language models reconstruct Digital Identity Optimization (DIO) and the Ontology of Digital Identity (ODI) when the framework is applied to its own distributed ecosystem.", "",
         "The portfolio preserves nine independent reports. It does not rank, harmonize, or synthesize their interpretations. Report descriptions are factual catalogue metadata; each full report is rendered from its unchanged Markdown source, with original Markdown and PDF files available.", "",
-        "## Project", f"- Home: {site_url}", "- Repository: https://github.com/dan-beranek/dio-to-dio", "", "## Independent reports"
+        "## Project", f"- Home: {site_url}", "- Repository: https://github.com/dan-beranek/dio-to-dio", "",
+        "## Machine-readable dataset metadata",
+        f"- DCAT JSON-LD: {urljoin(site_url, 'dataset.jsonld')}",
+        f"- DCAT Turtle: {urljoin(site_url, 'dataset.ttl')}",
+        f"- Source integrity manifest: {urljoin(site_url, 'source-integrity.json')}", "",
+        "## Independent reports"
     ]
     for record in records:
         llms_lines.extend([
