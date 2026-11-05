@@ -1,0 +1,10 @@
+{
+  "schema_version": "0.1.0",
+  "project": {
+    "title": "DIO to DIO",
+    "language": "en",
+    "author": "Daniel Beránek",
+    "research_question": "How do large language models reconstruct and examine Digital Identity Optimization (DIO) when the framework is applied to itself, and what do their independently developed interpretations and graph-theoretical analyses reveal about the DIO/ODI ecosystem?"
+  },
+  "analyses": []
+}
