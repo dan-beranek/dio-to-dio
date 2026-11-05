@@ -61,13 +61,58 @@ def validate_structured_data(config: dict) -> None:
         fail("metadata/structured-data.json has incomplete project metadata.")
     if not website.get("name") or not website.get("description") or not website.get("inLanguage"):
         fail("metadata/structured-data.json has incomplete website metadata.")
+    dataset = config.get("dataset", {})
+    if not dataset.get("@id") or not dataset.get("name") or not dataset.get("description"):
+        fail("metadata/structured-data.json has incomplete dataset metadata.")
+    expected_about = {
+        "https://vocab.danielberanek.cz/dio-odi/#DIO",
+        "https://vocab.danielberanek.cz/dio-odi/#ODI"
+    }
+    if set(dataset.get("about", [])) != expected_about:
+        fail("Dataset about links must identify the canonical DIO and ODI SKOS concepts.")
+
+def distribution_records(records: list, site_url: str, integrity_records: list) -> list:
+    hashes = {item["id"]: item for item in integrity_records}
+    distributions = []
+    for record in records:
+        integrity = hashes[record["id"]]
+        items = [
+            ("markdown", "Markdown", "sources/markdown/" + Path(record["markdown"]).name, "text/markdown", "https://www.iana.org/assignments/media-types/text/markdown", integrity["markdown_sha256"]),
+            ("pdf", "PDF", "sources/pdf/" + Path(record["pdf"]).name, "application/pdf", "https://www.iana.org/assignments/media-types/application/pdf", integrity["pdf_sha256"]),
+            ("html", "HTML", record["html"], "text/html", "https://www.iana.org/assignments/media-types/text/html", None)
+        ]
+        for key, label, path, media_type, media_type_uri, digest in items:
+            distributions.append({
+                "id": f"{record['id']}-{key}",
+                "record_id": record["id"],
+                "format": key,
+                "label": label,
+                "title": f"{record['model']} — {label}",
+                "url": urljoin(site_url, path),
+                "media_type": media_type,
+                "media_type_uri": media_type_uri,
+                "sha256": digest
+            })
+    distributions.append({
+        "id": "source-integrity",
+        "record_id": None,
+        "format": "json",
+        "label": "Source integrity manifest",
+        "title": "Source integrity manifest — SHA-256",
+        "url": urljoin(site_url, "source-integrity.json"),
+        "media_type": "application/json",
+        "media_type_uri": "https://www.iana.org/assignments/media-types/application/json",
+        "sha256": None
+    })
+    return distributions
+
 
 def report_schema_nodes(record: dict, site_url: str, config: dict) -> tuple[dict, dict]:
     page_url = urljoin(site_url, record["html"])
     page_id = page_url + "#webpage"
     work_id = page_url + "#report"
     website_id = site_url + "#website"
-    project_id = site_url + "#project"
+    dataset_id = config["dataset"]["@id"]
     person_ref = {"@id": config["person"]["@id"]}
     page = {
         "@type": "WebPage",
@@ -86,20 +131,25 @@ def report_schema_nodes(record: dict, site_url: str, config: dict) -> tuple[dict
         "description": record["description"],
         "url": page_url,
         "inLanguage": config["website"]["inLanguage"],
-        "isPartOf": {"@id": website_id},
-        "about": {"@id": project_id},
+        "isPartOf": [{"@id": website_id}, {"@id": dataset_id}],
+        "about": [{"@id": uri} for uri in config["dataset"]["about"]],
         "publisher": person_ref,
         "mainEntityOfPage": {"@id": page_id}
     }
     return page, work
 
-def build_jsonld(config: dict, site_url: str, records: list, current_record: dict | None = None) -> dict:
+
+def build_jsonld(config: dict, site_url: str, records: list, integrity_records: list, current_record: dict | None = None) -> dict:
     person = dict(config["person"])
     website_id = site_url + "#website"
     project_id = site_url + "#project"
+    dataset_config = config["dataset"]
+    dataset_id = dataset_config["@id"]
     person_ref = {"@id": person["@id"]}
     website_ref = {"@id": website_id}
     project_ref = {"@id": project_id}
+    dataset_ref = {"@id": dataset_id}
+    distributions = distribution_records(records, site_url, integrity_records)
 
     graph = [
         person,
@@ -120,6 +170,27 @@ def build_jsonld(config: dict, site_url: str, records: list, current_record: dic
             "url": site_url,
             "sameAs": config["project"]["sameAs"],
             "founder": person_ref
+        },
+        {
+            "@type": "Dataset",
+            "@id": dataset_id,
+            "name": dataset_config["name"],
+            "description": dataset_config["description"],
+            "url": site_url + "dataset.jsonld",
+            "inLanguage": config["website"]["inLanguage"],
+            "creator": person_ref,
+            "publisher": person_ref,
+            "isPartOf": project_ref,
+            "about": [{"@id": uri} for uri in dataset_config["about"]],
+            "keywords": dataset_config["keywords"],
+            "hasPart": [
+                {"@id": urljoin(site_url, record["html"]) + "#report"}
+                for record in records
+            ],
+            "distribution": [
+                {"@id": dataset_id + "#distribution-" + item["id"]}
+                for item in distributions
+            ]
         }
     ]
 
@@ -146,8 +217,20 @@ def build_jsonld(config: dict, site_url: str, records: list, current_record: dic
         page, work = report_schema_nodes(current_record, site_url, config)
         graph.extend([page, work])
 
+    for item in distributions:
+        node = {
+            "@type": "DataDownload",
+            "@id": dataset_id + "#distribution-" + item["id"],
+            "name": item["title"],
+            "contentUrl": item["url"],
+            "encodingFormat": item["media_type"],
+            "isPartOf": dataset_ref
+        }
+        if item["sha256"]:
+            node["sha256"] = item["sha256"]
+        graph.append(node)
+
     payload = {"@context": "https://schema.org", "@graph": graph}
-    # Validate serialization and graph identity before writing it into HTML.
     serialized = json.dumps(payload, ensure_ascii=False)
     parsed = json.loads(serialized)
     ids = [node["@id"] for node in parsed["@graph"] if isinstance(node, dict) and node.get("@id")]
@@ -158,7 +241,94 @@ def build_jsonld(config: dict, site_url: str, records: list, current_record: dic
         fail("Generated JSON-LD does not contain exactly one canonical Person node.")
     if "https://orcid.org/0009-0004-0050-0264" not in people[0].get("sameAs", []):
         fail("Generated JSON-LD lost the canonical ORCID sameAs link.")
+    datasets = [node for node in parsed["@graph"] if node.get("@type") == "Dataset"]
+    if len(datasets) != 1 or datasets[0].get("@id") != dataset_id:
+        fail("Generated JSON-LD does not contain exactly one canonical Dataset node.")
     return parsed
+
+
+def build_dcat_exports(config: dict, site_url: str, records: list, integrity_records: list) -> tuple[str, str]:
+    dataset = config["dataset"]
+    dataset_id = dataset["@id"]
+    person_id = config["person"]["@id"]
+    distributions = distribution_records(records, site_url, integrity_records)
+    graph = [{
+        "@id": dataset_id,
+        "@type": "dcat:Dataset",
+        "dcterms:title": {"@value": dataset["name"], "@language": "en"},
+        "dcterms:description": {"@value": dataset["description"], "@language": "en"},
+        "dcterms:creator": {"@id": person_id},
+        "dcterms:publisher": {"@id": person_id},
+        "dcat:landingPage": {"@id": site_url},
+        "dcat:theme": [{"@id": uri} for uri in dataset["about"]],
+        "dcat:distribution": [
+            {"@id": dataset_id + "#distribution-" + item["id"]}
+            for item in distributions
+        ]
+    }]
+    for item in distributions:
+        node = {
+            "@id": dataset_id + "#distribution-" + item["id"],
+            "@type": "dcat:Distribution",
+            "dcterms:title": {"@value": item["title"], "@language": "en"},
+            "dcat:accessURL": {"@id": item["url"]},
+            "dcat:mediaType": {"@id": item["media_type_uri"]}
+        }
+        if item["sha256"]:
+            node["spdx:checksum"] = {
+                "@type": "spdx:Checksum",
+                "spdx:algorithm": {"@id": "spdx:checksumAlgorithm_sha256"},
+                "spdx:checksumValue": item["sha256"]
+            }
+        graph.append(node)
+    jsonld = {
+        "@context": {
+            "dcat": "http://www.w3.org/ns/dcat#",
+            "dcterms": "http://purl.org/dc/terms/",
+            "spdx": "http://spdx.org/rdf/terms#"
+        },
+        "@graph": graph
+    }
+
+    def ttl_literal(value: str) -> str:
+        return json.dumps(value, ensure_ascii=False) + "@en"
+
+    lines = [
+        "@prefix dcat: <http://www.w3.org/ns/dcat#> .",
+        "@prefix dcterms: <http://purl.org/dc/terms/> .",
+        "@prefix spdx: <http://spdx.org/rdf/terms#> .",
+        "",
+        f"<{dataset_id}> a dcat:Dataset ;",
+        f"  dcterms:title {ttl_literal(dataset['name'])} ;",
+        f"  dcterms:description {ttl_literal(dataset['description'])} ;",
+        f"  dcterms:creator <{person_id}> ;",
+        f"  dcterms:publisher <{person_id}> ;",
+        f"  dcat:landingPage <{site_url}> ;",
+        "  dcat:theme " + ", ".join(f"<{uri}>" for uri in dataset["about"]) + " ;",
+        "  dcat:distribution " + ",\n    ".join(
+            f"<{dataset_id}#distribution-{item['id']}>" for item in distributions
+        ) + " .",
+        ""
+    ]
+    for index, item in enumerate(distributions):
+        lines.extend([
+            f"<{dataset_id}#distribution-{item['id']}> a dcat:Distribution ;",
+            f"  dcterms:title {ttl_literal(item['title'])} ;",
+            f"  dcat:accessURL <{item['url']}> ;",
+            f"  dcat:mediaType <{item['media_type_uri']}>"
+        ])
+        if item["sha256"]:
+            lines[-1] += " ;"
+            lines.extend([
+                "  spdx:checksum [",
+                "    a spdx:Checksum ;",
+                "    spdx:algorithm spdx:checksumAlgorithm_sha256 ;",
+                f"    spdx:checksumValue {json.dumps(item['sha256'])}",
+                "  ]"
+            ])
+        lines[-1] += " ."
+        lines.append("")
+    return json.dumps(jsonld, ensure_ascii=False, indent=2) + "\n", "\n".join(lines)
 
 def jsonld_script(payload: dict) -> str:
     serialized = json.dumps(payload, ensure_ascii=False, indent=2)
@@ -172,15 +342,16 @@ def card(record: dict, index: int, total: int) -> str:
     description = html.escape(record["description"])
     snapshot = html.escape(record["observation_snapshot"])
     href = html.escape(record["html"], quote=True)
+    md_href = html.escape(f"sources/markdown/{Path(record['markdown']).name}", quote=True)
     pdf_href = html.escape(f"sources/pdf/{Path(record['pdf']).name}", quote=True)
     return f'''<article class="analysis-card">
   <div class="analysis-card-meta"><span>{index:02d} / {total:02d}</span><span>{model}</span><time>{snapshot}</time></div>
   <h3><a href="{href}">{title}</a></h3>
   <p>{description}</p>
-  <div class="analysis-card-links"><a href="{href}">Read HTML report</a><a href="{pdf_href}" download>Original PDF</a></div>
+  <div class="analysis-card-links"><a href="{md_href}">Markdown</a><a href="{pdf_href}">PDF</a><a href="{href}">HTML</a></div>
 </article>'''
 
-def report_page(record: dict, index: int, total: int, html_fragment: str, site_url: str, structured_data: dict) -> str:
+def report_page(record: dict, index: int, total: int, html_fragment: str, site_url: str, structured_data: dict, integrity_records: list, all_records: list) -> str:
     model = html.escape(record["model"])
     title = html.escape(record["title"])
     description = html.escape(record["description"])
@@ -189,7 +360,7 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
     snapshot = html.escape(record["observation_snapshot"])
     page_url = urljoin(site_url, record["html"])
     canonical = html.escape(page_url, quote=True)
-    schema_markup = jsonld_script(build_jsonld(structured_data, site_url, [record], current_record=record))
+    schema_markup = jsonld_script(build_jsonld(structured_data, site_url, all_records, integrity_records, current_record=record))
     pdf_link = html.escape(f"../sources/pdf/{Path(record['pdf']).name}", quote=True)
     md_link = html.escape(f"../sources/markdown/{Path(record['markdown']).name}", quote=True)
     return f'''<!doctype html>
@@ -227,7 +398,7 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
       <p class="eyebrow">Independent model analysis · {index:02d} / {total:02d}</p>
       <h1>{model}</h1>
       <p class="report-title-meta">{title}</p>
-      <div class="report-source-links"><a href="{pdf_link}" download>Download original PDF</a><a href="{md_link}" download>Download original Markdown</a></div>
+      <div class="report-source-links"><a href="{md_link}">Markdown</a><a href="{pdf_link}">PDF</a><a href="../{html.escape(record["html"], quote=True)}">HTML</a></div>
     </section>
     <section class="report-description shell" aria-labelledby="description-heading">
       <div class="report-description-main">
@@ -313,7 +484,7 @@ def main() -> None:
             fail(f"Rendered page path must end in .html: {output_rel}")
         output_path = OUT / output_rel
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(report_page(record, index, len(records), fragment, site_url, structured_data), encoding="utf-8")
+        output_path.write_text(report_page(record, index, len(records), fragment, site_url, structured_data, integrity_records, records), encoding="utf-8")
 
     index_html = (ROOT / "index.html").read_text(encoding="utf-8")
     if CATALOGUE_START not in index_html or CATALOGUE_END not in index_html:
@@ -321,7 +492,7 @@ def main() -> None:
     cards = "\n".join(card(record, index, len(records)) for index, record in enumerate(records, start=1))
     replacement = f"{CATALOGUE_START}\n<div class=\"analysis-grid\">\n{cards}\n</div>\n{CATALOGUE_END}"
     index_html = re.sub(re.escape(CATALOGUE_START) + r".*?" + re.escape(CATALOGUE_END), lambda _: replacement, index_html, flags=re.S)
-    home_schema = jsonld_script(build_jsonld(structured_data, site_url, records))
+    home_schema = jsonld_script(build_jsonld(structured_data, site_url, records, integrity_records))
     if "</head>" not in index_html:
         fail("index.html is missing its closing head element.")
     index_html = index_html.replace("</head>", home_schema + "</head>", 1)
@@ -332,6 +503,10 @@ def main() -> None:
         "note": "Hashes are calculated from the original repository files before the website build.",
         "sources": integrity_records
     }, indent=2) + "\n", encoding="utf-8")
+
+    dcat_jsonld, dcat_turtle = build_dcat_exports(structured_data, site_url, records, integrity_records)
+    (OUT / "dataset.jsonld").write_text(dcat_jsonld, encoding="utf-8")
+    (OUT / "dataset.ttl").write_text(dcat_turtle, encoding="utf-8")
 
     sitemap_urls = [site_url] + [urljoin(site_url, r["html"]) for r in records]
     sitemap = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n"
@@ -349,9 +524,9 @@ def main() -> None:
     for record in records:
         llms_lines.extend([
             f"### {record['model']}: {record['title']}",
-            f"- HTML: {urljoin(site_url, record['html'])}",
             f"- Markdown: {urljoin(site_url, 'sources/markdown/' + Path(record['markdown']).name)}",
             f"- PDF: {urljoin(site_url, 'sources/pdf/' + Path(record['pdf']).name)}",
+            f"- HTML: {urljoin(site_url, record['html'])}",
             f"- Description: {record['description']}", ""
         ])
     (OUT / "llms.txt").write_text("\n".join(llms_lines), encoding="utf-8")
