@@ -188,7 +188,7 @@ def build_jsonld(config: dict, site_url: str, records: list, integrity_records: 
                 for record in records
             ],
             "distribution": [
-                {"@id": dataset_id + "#distribution-" + item["id"]}
+                {"@id": dataset_id + "-distribution-" + item["id"]}
                 for item in distributions
             ]
         }
@@ -220,7 +220,7 @@ def build_jsonld(config: dict, site_url: str, records: list, integrity_records: 
     for item in distributions:
         node = {
             "@type": "DataDownload",
-            "@id": dataset_id + "#distribution-" + item["id"],
+            "@id": dataset_id + "-distribution-" + item["id"],
             "name": item["title"],
             "contentUrl": item["url"],
             "encodingFormat": item["media_type"],
@@ -262,13 +262,13 @@ def build_dcat_exports(config: dict, site_url: str, records: list, integrity_rec
         "dcat:landingPage": {"@id": site_url},
         "dcat:theme": [{"@id": uri} for uri in dataset["about"]],
         "dcat:distribution": [
-            {"@id": dataset_id + "#distribution-" + item["id"]}
+            {"@id": dataset_id + "-distribution-" + item["id"]}
             for item in distributions
         ]
     }]
     for item in distributions:
         node = {
-            "@id": dataset_id + "#distribution-" + item["id"],
+            "@id": dataset_id + "-distribution-" + item["id"],
             "@type": "dcat:Distribution",
             "dcterms:title": {"@value": item["title"], "@language": "en"},
             "dcat:accessURL": {"@id": item["url"]},
