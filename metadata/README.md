@@ -36,3 +36,16 @@ No ranking, scoring, shared finding taxonomy, or automatic meta-analysis is gene
 - Observation snapshots are not converted into publication dates.
 
 Update this file when the canonical author identity, ORCID, project identity, or website-level description changes. Generated JSON-LD is emitted by `scripts/build.py`; do not maintain separate hand-written graphs in the HTML templates.
+
+## Dataset and distribution metadata
+
+`structured-data.json` is the shared source of truth for the canonical Person, website, project, and Dataset identity.
+
+- The Dataset is a curated collection of nine independent model-generated reports. Identifying the Dataset creator/curator does not attribute the generated report text to that person.
+- Dataset subjects use the exact canonical SKOS concept URIs for DIO and ODI from the DIO/ODI Reference Vocabulary. No local or duplicate concept identifiers are minted.
+- The build emits Schema.org `Dataset` and `DataDownload` nodes on the landing page and report pages.
+- The build also emits a DCAT 3 catalogue in `dataset.jsonld` and `dataset.ttl`. Each report has Markdown, PDF, and HTML distributions with explicit media types and stable access URLs.
+- SHA-256 checksums are attached to the original Markdown and PDF distributions and are also listed in `source-integrity.json`. HTML is a generated representation and is not assigned a checksum in the Dataset metadata.
+- Observation snapshots remain distinct from publication dates. No publication date or licence is inferred where it has not been established.
+
+The DCAT files are generated outputs. Do not edit them by hand; update the metadata and build logic instead.
