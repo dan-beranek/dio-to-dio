@@ -19,5 +19,22 @@
     "sameAs": [
       "https://github.com/dan-beranek/dio-to-dio"
     ]
+  },
+  "dataset": {
+    "@id": "https://dan-beranek.github.io/dio-to-dio/#dataset",
+    "name": "DIO to DIO: Independent LLM Analyses of DIO/ODI",
+    "description": "A curated research dataset comprising nine independently generated large-language-model analyses of the distributed Digital Identity Optimization (DIO) and Ontology of Digital Identity (ODI) ecosystem. Each report is preserved as an unchanged Markdown source and PDF, alongside a faithful HTML representation. The reports retain independent analytical approaches and are not ranked, harmonized, or synthesized.",
+    "about": [
+      "https://vocab.danielberanek.cz/dio-odi/#DIO",
+      "https://vocab.danielberanek.cz/dio-odi/#ODI"
+    ],
+    "keywords": [
+      "Digital Identity Optimization",
+      "Ontology of Digital Identity",
+      "large language models",
+      "reflexive research",
+      "digital identity reconstruction",
+      "graph-theoretical analysis"
+    ]
   }
 }
