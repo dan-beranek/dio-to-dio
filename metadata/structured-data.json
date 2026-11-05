@@ -1,0 +1,23 @@
+{
+  "person": {
+    "@id": "https://danielberanek.cz/#person",
+    "@type": "Person",
+    "name": "Daniel Beránek",
+    "url": "https://danielberanek.cz/",
+    "sameAs": [
+      "https://orcid.org/0009-0004-0050-0264"
+    ]
+  },
+  "website": {
+    "name": "DIO to DIO",
+    "description": "A reflexive research portfolio examining how large language models reconstruct Digital Identity Optimization (DIO) and the Ontology of Digital Identity (ODI) when the framework is applied to its own distributed ecosystem.",
+    "inLanguage": "en"
+  },
+  "project": {
+    "name": "DIO to DIO",
+    "description": "An independent reflexive research project that examines how large language models reconstruct and explore Digital Identity Optimization (DIO) and the Ontology of Digital Identity (ODI) when the framework is applied to its own distributed ecosystem. The portfolio preserves independent model-specific interpretations and graph-theoretical analyses without ranking or harmonizing them.",
+    "sameAs": [
+      "https://github.com/dan-beranek/dio-to-dio"
+    ]
+  }
+}
