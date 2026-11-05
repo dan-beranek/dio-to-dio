@@ -5,7 +5,8 @@
     "language": "en",
     "author": "Daniel Beránek",
     "research_question": "How do large language models reconstruct and examine Digital Identity Optimization (DIO) when the framework is applied to itself, and what do their independently developed interpretations and graph-theoretical analyses reveal about the DIO/ODI ecosystem?",
-    "publication_principle": "The portfolio provides a common publication format but does not harmonize, rank, or synthesize the individual model interpretations."
+    "publication_principle": "The portfolio provides a common publication format but does not harmonize, rank, or synthesize the individual model interpretations.",
+    "site_url": "https://dan-beranek.github.io/dio-to-dio/"
   },
   "analyses": [
     {
