@@ -20,6 +20,7 @@ The project-level research question is:
 - Individual HTML report pages are generated from those Markdown files using Pandoc. The conversion is a presentation transformation; it does not rewrite, shorten, or editorially normalize report prose.
 - Original PDFs in `reports/pdf/` are copied to the published site unchanged.
 - Factual descriptions and report metadata are maintained separately in `metadata/analyses.json`.
+- Shared Schema.org JSON-LD identity metadata is maintained in `metadata/structured-data.json` and rendered consistently into the landing page and all report pages.
 - The portfolio provides a common publishing format, not a common interpretation.
 - Any future meta-analysis would have its own research question, method, and standalone publication.
 
