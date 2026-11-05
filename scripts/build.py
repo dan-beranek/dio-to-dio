@@ -169,7 +169,8 @@ def build_jsonld(config: dict, site_url: str, records: list, integrity_records: 
             "description": config["project"]["description"],
             "url": site_url,
             "sameAs": config["project"]["sameAs"],
-            "founder": person_ref
+            "founder": person_ref,
+            "subjectOf": dataset_ref
         },
         {
             "@type": "Dataset",
@@ -180,7 +181,6 @@ def build_jsonld(config: dict, site_url: str, records: list, integrity_records: 
             "inLanguage": config["website"]["inLanguage"],
             "creator": person_ref,
             "publisher": person_ref,
-            "isPartOf": project_ref,
             "about": [{"@id": uri} for uri in dataset_config["about"]],
             "keywords": dataset_config["keywords"],
             "hasPart": [
@@ -259,6 +259,7 @@ def build_dcat_exports(config: dict, site_url: str, records: list, integrity_rec
         "dcterms:description": {"@value": dataset["description"], "@language": "en"},
         "dcterms:creator": {"@id": person_id},
         "dcterms:publisher": {"@id": person_id},
+        "dcterms:isPartOf": {"@id": site_url + "#project"},
         "dcterms:language": {"@id": "http://id.loc.gov/vocabulary/iso639-1/en"},
         "dcat:landingPage": {"@id": site_url},
         "dcat:keyword": [{"@value": keyword, "@language": "en"} for keyword in dataset["keywords"]],
@@ -305,6 +306,7 @@ def build_dcat_exports(config: dict, site_url: str, records: list, integrity_rec
         f"  dcterms:description {ttl_literal(dataset['description'])} ;",
         f"  dcterms:creator <{person_id}> ;",
         f"  dcterms:publisher <{person_id}> ;",
+        f"  dcterms:isPartOf <{site_url}#project> ;",
         "  dcterms:language <http://id.loc.gov/vocabulary/iso639-1/en> ;",
         f"  dcat:landingPage <{site_url}> ;",
         "  dcat:keyword " + ", ".join(ttl_literal(keyword) for keyword in dataset["keywords"]) + " ;",
