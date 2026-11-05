@@ -1,97 +1,56 @@
-# Upload guide — source reports
+# Repository guide — source reports and publishing
 
-This repository is prepared to receive all nine original Markdown reports and their nine matching PDF files. You do **not** need to upload the reports into ChatGPT one by one. Put the files directly into this GitHub repository; once they are there, the repository can be used as the source for the next analysis and publication steps.
+This repository already contains the nine original Markdown reports and their nine matching PDFs. It is the source of truth for the public DIO to DIO research portfolio.
 
-## 1. Create the repository
+## Source locations
 
-Create an empty public GitHub repository named:
+- Original Markdown: `reports/markdown/`
+- Original PDF: `reports/pdf/`
+- Factual report metadata: `metadata/analyses.json`
+- Project landing-page template: `index.html`
+- Build script: `scripts/build.py`
 
-```text
-dan-beranek/dio-to-dio
-```
+For every report, keep the Markdown and PDF basenames matched exactly.
 
-Do not initialize it with an additional README, licence, or `.gitignore`, because this starter package already contains the initial files.
+## Source-file rules
 
-## 2. Add the starter structure
-
-Download and extract `dio-to-dio-starter.zip`. The folder inside the archive is `dio-to-dio-starter/`.
-
-The recommended method is GitHub Desktop:
-
-1. Clone the empty `dan-beranek/dio-to-dio` repository to your computer.
-2. Copy the **contents** of the extracted `dio-to-dio-starter/` folder into the cloned repository folder. Do not replace or delete the hidden `.git` directory created by GitHub Desktop.
-3. Commit the files and push the commit to GitHub.
-
-The same can be done with Git on the command line after cloning the empty repository:
-
-```bash
-git clone https://github.com/dan-beranek/dio-to-dio.git
-# Copy the contents of dio-to-dio-starter/ into the cloned dio-to-dio/ folder.
-cd dio-to-dio
-git add .
-git commit -m "Add DIO to DIO project scaffold"
-git push origin main
-```
-
-If GitHub creates a default branch with a name other than `main`, use that branch name in the final command.
-
-## 3. Add the source files
-
-Put the nine original `.md` files here:
-
-```text
-reports/markdown/
-```
-
-Put the nine matching original `.pdf` files here:
-
-```text
-reports/pdf/
-```
-
-Use the same filename stem for each pair. Example:
-
-| Original Markdown | Matching PDF |
-|---|---|
-| `reports/markdown/chatgpt.md` | `reports/pdf/chatgpt.pdf` |
-| `reports/markdown/deepseek.md` | `reports/pdf/deepseek.pdf` |
-| `reports/markdown/leo-ai.md` | `reports/pdf/leo-ai.pdf` |
-
-These are examples of filename conventions, not a prescribed list of the nine systems. Use names that accurately identify the actual source system/report.
-
-### Source-file rules
-
-- Upload the original files, not rewritten or re-exported substitutes.
-- Do not add YAML front matter or metadata to the source Markdown.
+- Preserve original Markdown and PDF files byte-for-byte unless a new source version is intentionally supplied.
+- Do not add YAML front matter to the Markdown.
 - Do not remove or split prompt appendices, references, tables, diagrams, or other report sections.
 - Do not edit a report to make its structure match another report.
-- Keep the PDF exactly as originally produced.
-- If an original file has a meaningful version marker in its filename, preserve that information consistently in the matching pair.
+- Do not treat the catalogue description as a replacement for the report.
+- Record a new or revised source pair and update its factual metadata deliberately; keep the original publication state recoverable through Git history.
 
-## 4. Push the reports
+## Build and validation
 
-After copying all 18 source files into the two directories, commit and push them together. This avoids any need to submit the documents to ChatGPT as separate daily inputs.
+Requirements: Python 3 and Pandoc.
 
-## 5. Tell ChatGPT the repository is ready
+From the repository root, run:
 
-Send the repository URL:
-
-```text
-https://github.com/dan-beranek/dio-to-dio
+```bash
+python3 scripts/build.py
 ```
 
-The next step will be to inspect all nine Markdown/PDF pairs from GitHub, verify their pairing and source integrity, and prepare factual report-specific catalogue descriptions. The HTML pages will then be generated from the Markdown sources without editorial changes.
+The build stops if:
+- the catalogue does not contain exactly nine reports;
+- a listed Markdown or PDF source is missing;
+- a Markdown/PDF filename pair does not match;
+- the files in the source folders do not match the catalogue inventory;
+- Pandoc or the source-preservation filter is unavailable.
 
-## Folder map
+The build then:
+- renders the Markdown source to HTML using Pandoc;
+- keeps the report body separate from factual catalogue metadata;
+- copies the original Markdown and PDF sources into the deployable output unchanged;
+- records SHA-256 digests for all 18 source documents;
+- generates the landing-page cards, individual report pages, sitemap, robots.txt, and llms.txt.
 
-```text
-reports/
-├── markdown/
-│   ├── <report-slug-01>.md
-│   ├── <report-slug-02>.md
-│   └── ...
-└── pdf/
-    ├── <report-slug-01>.pdf
-    ├── <report-slug-02>.pdf
-    └── ...
-```
+LaTeX used only for the original title-page typography is represented with equivalent HTML typography. A print-only page-break command does not create an empty web page. Unrecognized raw TeX is retained visibly rather than silently discarded.
+
+## GitHub Pages
+
+The GitHub Actions workflow builds the static output after relevant changes are pushed to `main`. Set the Pages deployment source to **GitHub Actions** in repository settings if this has not already been done.
+
+Expected URL:
+
+<https://dan-beranek.github.io/dio-to-dio/>
