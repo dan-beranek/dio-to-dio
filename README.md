@@ -19,8 +19,10 @@ The project-level research question is:
 - The original Markdown files in `reports/markdown/` are the authoritative text sources.
 - Individual HTML report pages are generated from those Markdown files using Pandoc. The conversion is a presentation transformation; it does not rewrite, shorten, or editorially normalize report prose.
 - Original PDFs in `reports/pdf/` are copied to the published site unchanged.
+- Each catalogue record exposes three browser-accessible representations: Markdown, PDF, and generated HTML. Links do not force file downloads.
 - Factual descriptions and report metadata are maintained separately in `metadata/analyses.json`.
-- Shared Schema.org JSON-LD identity metadata is maintained in `metadata/structured-data.json` and rendered consistently into the landing page and all report pages.
+- Shared Schema.org JSON-LD identity and Dataset metadata are maintained in `metadata/structured-data.json` and rendered consistently into the landing page and all report pages.
+- The build emits a DCAT 3 dataset catalogue as `dataset.jsonld` and `dataset.ttl`, with explicit distributions, media types, canonical DIO/ODI SKOS subject URIs, and SHA-256 checksums for the original Markdown/PDF sources.
 - The portfolio provides a common publishing format, not a common interpretation.
 - Any future meta-analysis would have its own research question, method, and standalone publication.
 
@@ -44,7 +46,7 @@ The project-level research question is:
 └── README.md
 ```
 
-The generated `site/` directory contains the deployable static website, individual HTML pages, and unchanged source downloads. It is a build output and is not maintained by hand.
+The generated `site/` directory contains the deployable static website, individual HTML pages, unchanged Markdown/PDF sources, machine-readable Dataset catalogues, and source-integrity metadata. It is a build output and is not maintained by hand.
 
 ## Build locally
 
