@@ -1,10 +1,120 @@
 {
-  "schema_version": "0.1.0",
+  "schema_version": "0.2.0",
   "project": {
     "title": "DIO to DIO",
     "language": "en",
     "author": "Daniel Beránek",
-    "research_question": "How do large language models reconstruct and examine Digital Identity Optimization (DIO) when the framework is applied to itself, and what do their independently developed interpretations and graph-theoretical analyses reveal about the DIO/ODI ecosystem?"
+    "research_question": "How do large language models reconstruct and examine Digital Identity Optimization (DIO) when the framework is applied to itself, and what do their independently developed interpretations and graph-theoretical analyses reveal about the DIO/ODI ecosystem?",
+    "publication_principle": "The portfolio provides a common publication format but does not harmonize, rank, or synthesize the individual model interpretations."
   },
-  "analyses": []
+  "analyses": [
+    {
+      "id": "brave-ai",
+      "model": "Brave AI",
+      "title": "The Distributed Identity of DIO/ODI: A Reflexive Analysis of Reconstruction Resilience Across Heterogeneous Representations",
+      "observation_snapshot": "30 October 2026",
+      "description": "A reflexive analysis using DIO/ODI concepts including referential continuity, identity-preserving variation, and Reconstruction Failure Modes. It follows the development from the Manifest through MVDIO, the Taxonomic Note, and the Reference Vocabulary; examines multilingual and machine-readable representations; and compares Zenodo, website-hub, and GitHub/vocabulary entry points.",
+      "graph_approach": "A directed heterogeneous multigraph with web, archival, repository, identity, concept, and external-reference nodes. It distinguishes hyperlink, citation, semantic, authorship, version, distribution, and language relations; degree and connectivity claims are bounded by the collected observation domain.",
+      "prompt_arrangement": "Staged prompt appendix: initial research prompt, follow-up methodological clarification, model-specific addendum, and final integration instruction.",
+      "markdown": "reports/markdown/BraveAI-Distributed-Identity-of-DIO-ODI-Analysis.md",
+      "pdf": "reports/pdf/BraveAI-Distributed-Identity-of-DIO-ODI-Analysis.pdf",
+      "html": "analyses/brave-ai.html"
+    },
+    {
+      "id": "chatgpt",
+      "model": "ChatGPT",
+      "title": "Reconstructing Digital Identity Optimization and the Ontology of Digital Identity Across a Distributed Semantic Ecosystem: Referential Continuity, Conceptual Evolution and Network Structure",
+      "observation_snapshot": "30 October 2026",
+      "description": "Begins with the Reference Vocabulary and its source repository, then follows the archival, website, multilingual, and secondary distribution layers. It examines conceptual development, cross-layer continuity, AI-oriented context files, independent reception, and application mappings including RAG, HEM × DIO, and commit-boundary × Policy-as-Code.",
+      "graph_approach": "Separates the K6 conceptual graph, SKOS vocabulary graph, publication/provenance graph, and website navigation/distribution graph. It quantifies the repository's declared metadata relation graph as 21 typed directed relationships among 17 identifiers, not as the global web graph.",
+      "prompt_arrangement": "Staged prompt appendix: initial research prompt, follow-up methodological clarification, model-specific addendum, and final integration instruction.",
+      "markdown": "reports/markdown/ChatGPT-Reconstructing-DIO-ODI-Across-Semantic-Ecosystem.md",
+      "pdf": "reports/pdf/ChatGPT-Reconstructing-DIO-ODI-Across-Semantic-Ecosystem.pdf",
+      "html": "analyses/chatgpt.html"
+    },
+    {
+      "id": "deepseek",
+      "model": "DeepSeek",
+      "title": "Digital Identity Optimization (DIO) and the Ontology of Digital Identity (ODI): A Multidimensional Analysis of Conceptual Coherence, Machine-Readable Representation, and Network Distribution",
+      "observation_snapshot": "30 October 2026",
+      "description": "A SKOS-first, DIO/ODI-native analysis of conceptual continuity, reconstruction failure modes, multilingual representations, machine-readable context files, and application mappings. Its report-specific emergent discussion treats the SKOS-first strategy as an epistemic position and `llms.txt` as a declared interface rather than a structural prerequisite.",
+      "graph_approach": "Uses a heterogeneous directed network with distinct machine-readable, archival, and web-discursive views. It compares archival entry through Zenodo/ORCID with entry through the website hub and limits in-degree observations to the collected corpus.",
+      "prompt_arrangement": "Staged prompt appendix: initial research prompt, follow-up methodological clarification, model-specific addendum, and final integration instruction.",
+      "markdown": "reports/markdown/DeepSeek-DIO-ODI-Multidimensional-Analysis.md",
+      "pdf": "reports/pdf/DeepSeek-DIO-ODI-Multidimensional-Analysis.pdf",
+      "html": "analyses/deepseek.html"
+    },
+    {
+      "id": "gemini-deep-research",
+      "model": "Gemini Deep Research",
+      "title": "Reflexive Identity Continuity and Graph Topology in Digital Identity Optimization (DIO) and Ontology of Digital Identity (ODI)",
+      "observation_snapshot": "30 October 2026",
+      "description": "Applies a four-level statement hierarchy to distinguish observed artifacts, architectural roles, local reconstruction consequences, and system-level significance. It examines persistent identity anchors, machine-readable vocabularies, archival records, web representations, language projections, and uninspected execution boundaries.",
+      "graph_approach": "Models 28 primary nodes and 68 directed edges within the report's observation boundary. Node and edge classes cover web/document, vocabulary, archival, code/context, hyperlink, semantic, identity, and provenance relations; the report compares Zenodo-first and web-hub-first traversal.",
+      "prompt_arrangement": "Staged prompt appendix: initial research prompt, follow-up methodological clarification, model-specific addendum, and final integration instruction.",
+      "markdown": "reports/markdown/Gemini-Deep-Research-Identity-Continuity-Graph-Topology-DIO-ODI.md",
+      "pdf": "reports/pdf/Gemini-Deep-Research-Identity-Continuity-Graph-Topology-DIO-ODI.pdf",
+      "html": "analyses/gemini-deep-research.html"
+    },
+    {
+      "id": "gemini-pro-latest",
+      "model": "Gemini Pro Latest",
+      "title": "Reflexive Implementation of Digital Identity: Analyzing the Structural Distribution and Reconstructability of DIO/ODI",
+      "observation_snapshot": "30 October 2026",
+      "description": "Examines the distributed corpus through machine-readable reference, archival/epistemic, and discursive/multilingual strata. It evaluates reconstruction mechanisms, application mappings, translation variance, acquisition friction, and the different reconstruction paths afforded by an archival entry and the narrative website hub.",
+      "graph_approach": "Contrasts an archival 'Temporal Causal Graph' of DOI/version provenance with a website 'Star Topology' centred on the manifesto hub. Acquisition failures are treated as observer-relative friction rather than proof that a resource is absent.",
+      "prompt_arrangement": "Staged prompt appendix: initial research prompt, follow-up methodological clarification, model-specific addendum, and final integration instruction.",
+      "markdown": "reports/markdown/Gemini-Pro-Latest-Analyzing-Distribution-Reconstructability-DIO-ODI.md",
+      "pdf": "reports/pdf/Gemini-Pro-Latest-Analyzing-Distribution-Reconstructability-DIO-ODI.pdf",
+      "html": "analyses/gemini-pro-latest.html"
+    },
+    {
+      "id": "leo-ai",
+      "model": "Leo AI",
+      "title": "When the Framework Studies Itself: Distributed Implementation, Reconstruction and Resilience in the DIO/ODI Ecosystem",
+      "observation_snapshot": "30 October 2026",
+      "description": "Uses a single integrated research prompt. The report examines conceptual continuity and historical refinement, multilingual depth, archival and identity infrastructure, typed provenance relations, AI-oriented representations, and the distinction between framework-level identity reconstruction and precise concept-status reconstruction.",
+      "graph_approach": "Models works, versions, repositories, releases, concept clusters, web pages, language projections, archive snapshots, identity records, and platform profiles as distinct nodes. It distinguishes computed, manually observed, and interpretive findings and compares archival-first with web-hub-first reachability.",
+      "prompt_arrangement": "One integrated prompt, documented in the appendix as an author-designed integrated research prompt.",
+      "markdown": "reports/markdown/LeoAI-Implementation-Reconstruction-Resilience-DIO-ODI.md",
+      "pdf": "reports/pdf/LeoAI-Implementation-Reconstruction-Resilience-DIO-ODI.pdf",
+      "html": "analyses/leo-ai.html"
+    },
+    {
+      "id": "lumo",
+      "model": "Lumo",
+      "title": "DIO/ODI Ecosystem Analysis: A Meta-Analytical Study of Distributed Identity Reconstruction",
+      "observation_snapshot": "30 October 2026",
+      "description": "Frames the report as a meta-analytical study and develops its analytical method from the framework's own materials. It covers conceptual continuity, MVDIO concepts, source provenance, version history, multilingual representation, machine-readable artifact functions, application mappings, and explicit accessibility notes.",
+      "graph_approach": "Models web pages, SKOS concepts, archival records, repository artifacts, preprints, and identity records, with directed navigation, version, citation/provenance, semantic, language-alternate, and archive-inclusion relations. It compares Zenodo and website-hub entry points.",
+      "prompt_arrangement": "Staged prompt appendix: initial research prompt, follow-up methodological clarification, model-specific addendum, and final integration instruction.",
+      "markdown": "reports/markdown/Lumo-DIO-ODI-Analysis-Reconstruction.md",
+      "pdf": "reports/pdf/Lumo-DIO-ODI-Analysis-Reconstruction.pdf",
+      "html": "analyses/lumo.html"
+    },
+    {
+      "id": "mistral",
+      "model": "Mistral",
+      "title": "DIO/ODI Applied to Itself: The Resilience of a Distributed Scholarly Identity",
+      "observation_snapshot": "29–30 October 2026",
+      "description": "Organizes reconstructability into five levels: referent identification, conceptual core, structural semantics, version currency, and provenance/genesis/distribution. It combines interpretive symmetry and level discipline with a materiality assessment of specific weaknesses and a comparison of three entry points.",
+      "graph_approach": "A heterogeneous directed graph comprising 92 nodes and 255 observed edges. The SKOS conceptual graph is analyzed separately from infrastructural relations; the report compares Zenodo, website-hub, and ORCID entry points and computes centrality and reachability within its stated boundary.",
+      "prompt_arrangement": "Staged prompt appendix: initial research prompt, follow-up methodological clarification, model-specific addendum, and final integration instruction.",
+      "markdown": "reports/markdown/Mistral-DIO-ODI-Applied-to-Itself.md",
+      "pdf": "reports/pdf/Mistral-DIO-ODI-Applied-to-Itself.pdf",
+      "html": "analyses/mistral.html"
+    },
+    {
+      "id": "qwen",
+      "model": "Qwen",
+      "title": "Digital Identity Optimization and the Ontology of Digital Identity: A Reflexive Analysis of Implementation, Distribution, and Reconstructability",
+      "observation_snapshot": "30 October 2026",
+      "description": "A reflexive analysis through DIO/ODI's conceptual apparatus, covering Reconstruction Failure Modes, continuity across representational layers, author identity, multilingual representation, application mappings, and version differences. It explicitly distinguishes the conceptual K6 framing used in the report from the observed distribution network.",
+      "graph_approach": "A heterogeneous directed graph with distinct WebPage, ArchivalRecord, VocabularyArtifact, RepositoryArtifact, IdentityRecord, ContextFile, ApplicationMapping, and AuthorEntity nodes, plus typed navigation, provenance, semantic, language, and identity edges. The topology is described as interconnected clusters around central hubs.",
+      "prompt_arrangement": "Staged prompt appendix: initial research prompt, follow-up methodological clarification, model-specific addendum, and final integration instruction.",
+      "markdown": "reports/markdown/Qwen-Implementation-Distribution-Reconstructability.md",
+      "pdf": "reports/pdf/Qwen-Implementation-Distribution-Reconstructability.pdf",
+      "html": "analyses/qwen.html"
+    }
+  ]
 }
