@@ -23,3 +23,16 @@ Catalogue metadata is not part of the source report. It may identify and describ
 The project-level research question describes the common object of inquiry. It does not serve as a mandatory report-level question and does not override any model-specific framing.
 
 No ranking, scoring, shared finding taxonomy, or automatic meta-analysis is generated from these records.
+
+## Shared structured data
+
+`structured-data.json` is the single source of truth for the website-level identity graph used by the static-site builder.
+
+- The canonical person identifier is `https://danielberanek.cz/#person`.
+- The person's ORCID is linked through `sameAs`: `https://orcid.org/0009-0004-0050-0264`.
+- The portfolio is represented as a `ResearchProject`, with the person identified as its founder and maintainer.
+- The website and each report page reuse the same Person, WebSite, and ResearchProject identifiers.
+- Individual LLM outputs are represented as `CreativeWork` records. The person is identified as publisher/curator of the portfolio, not as the author of model-generated report text.
+- Observation snapshots are not converted into publication dates.
+
+Update this file when the canonical author identity, ORCID, project identity, or website-level description changes. Generated JSON-LD is emitted by `scripts/build.py`; do not maintain separate hand-written graphs in the HTML templates.
