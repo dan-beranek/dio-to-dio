@@ -52,7 +52,7 @@ def validate_structured_data(config: dict) -> None:
     if any(not person.get(key) for key in required_person_fields):
         fail("metadata/structured-data.json has incomplete person identity metadata.")
     if person["@type"] != "Person":
-        fail("The canonical author entity must use @type Person.")
+        fail("The canonical person node must use @type Person.")
     if person["@id"] != "https://danielberanek.cz/#person":
         fail("The canonical person @id must remain https://danielberanek.cz/#person.")
     if "https://orcid.org/0009-0004-0050-0264" not in person["sameAs"]:
@@ -119,8 +119,7 @@ def build_jsonld(config: dict, site_url: str, records: list, current_record: dic
             "description": config["project"]["description"],
             "url": site_url,
             "sameAs": config["project"]["sameAs"],
-            "founder": person_ref,
-            "maintainer": person_ref
+            "founder": person_ref
         }
     ]
 
