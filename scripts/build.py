@@ -368,19 +368,27 @@ EXTERNAL_RESOURCES = [
 
 
 def resource_menu(mobile: bool = False) -> str:
-    menu_class = "mobile-resource-nav" if mobile else "resource-nav"
     links_class = "mobile-resource-links" if mobile else "resource-links"
     panel_id = "mobile-external-resources" if mobile else "desktop-external-resources"
-    links = "\n            ".join(
+    links = "\\n            ".join(
         f'<a href="{html.escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">{html.escape(label)}<span aria-hidden="true">↗</span></a>'
         for url, label in EXTERNAL_RESOURCES
     )
-    return f'''<details class="{menu_class}">
+    if mobile:
+        return f\'''<details class="mobile-resource-nav">
           <summary aria-controls="{panel_id}">External resources <span class="resource-chevron" aria-hidden="true"></span></summary>
           <div class="{links_class}" id="{panel_id}">
             {links}
           </div>
-        </details>'''
+        </details>\'''
+    return f\'''<div class="resource-nav">
+          <button class="resource-trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="{panel_id}">
+            External resources <span class="resource-chevron" aria-hidden="true"></span>
+          </button>
+          <div class="{links_class}" id="{panel_id}">
+            {links}
+          </div>
+        </div>\'''
 
 
 def report_header_navigation() -> str:
@@ -559,6 +567,8 @@ def main() -> None:
         page_html = page_path.read_text(encoding="utf-8")
         if 'class="primary-nav"' not in page_html or 'class="mobile-menu"' not in page_html:
             fail(f"Missing desktop or mobile navigation in {page_path.relative_to(OUT)}")
+        if 'class="resource-trigger"' not in page_html or 'aria-haspopup="true"' not in page_html:
+            fail(f"Missing accessible desktop external-resources trigger in {page_path.relative_to(OUT)}")
         if "assets/js/site.js" not in page_html:
             fail(f"Missing navigation behaviour script in {page_path.relative_to(OUT)}")
         for resource_url, _ in EXTERNAL_RESOURCES:
