@@ -357,6 +357,51 @@ def card(record: dict, index: int, total: int) -> str:
   <div class="analysis-card-links"><a href="{md_href}">Markdown</a><a href="{pdf_href}">PDF</a><a href="{href}">HTML</a></div>
 </article>'''
 
+EXTERNAL_RESOURCES = [
+    ("https://danielberanek.cz/manifest-dio/", "DIO/ODI Hub"),
+    ("https://vocab.danielberanek.cz/dio-odi/", "Reference Vocabulary & Model"),
+    ("https://dan-beranek.github.io/dio-odi-autorsky-koncept/en/partnerships/", "DIO/ODI Partnerships"),
+    ("https://zenodo.org/search?q=metadata.creators.person_or_org.name%3A%22Ber%C3%A1nek%2C%20Daniel%22&l=list&p=1&s=10&sort=bestmatch", "Publications on Zenodo"),
+    ("https://orcid.org/0009-0004-0050-0264", "Author profile (ORCID)"),
+    ("https://github.com/dan-beranek/dio-odi-reference-model", "Reference Model repository (GitHub)"),
+]
+
+
+def resource_menu(mobile: bool = False) -> str:
+    menu_class = "mobile-resource-nav" if mobile else "resource-nav"
+    links_class = "mobile-resource-links" if mobile else "resource-links"
+    panel_id = "mobile-external-resources" if mobile else "desktop-external-resources"
+    links = "\n            ".join(
+        f'<a href="{html.escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">{html.escape(label)}<span aria-hidden="true">↗</span></a>'
+        for url, label in EXTERNAL_RESOURCES
+    )
+    return f'''<details class="{menu_class}">
+          <summary aria-controls="{panel_id}">External resources <span class="resource-chevron" aria-hidden="true"></span></summary>
+          <div class="{links_class}" id="{panel_id}">
+            {links}
+          </div>
+        </details>'''
+
+
+def report_header_navigation() -> str:
+    desktop = f'''<nav class="primary-nav" aria-label="Report navigation">
+        <a href="../">All analyses</a>
+        <a href="https://github.com/dan-beranek/dio-to-dio">Source repository</a>
+        {resource_menu()}
+      </nav>'''
+    mobile = f'''<details class="mobile-menu">
+        <summary class="mobile-menu-toggle" aria-label="Toggle navigation"><span class="menu-icon" aria-hidden="true"></span></summary>
+        <div class="mobile-menu-panel">
+          <nav aria-label="Mobile navigation">
+            <a href="../">All analyses</a>
+            <a href="https://github.com/dan-beranek/dio-to-dio">Source repository</a>
+            {resource_menu(True)}
+          </nav>
+        </div>
+      </details>'''
+    return desktop + "\n      " + mobile
+
+
 def report_page(record: dict, index: int, total: int, html_fragment: str, site_url: str, structured_data: dict, integrity_records: list, all_records: list) -> str:
     model = html.escape(record["model"])
     title = html.escape(record["title"])
@@ -384,6 +429,7 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
   <link rel="canonical" href="{canonical}">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="stylesheet" href="../assets/css/site.css">
+  <script src="../assets/js/site.js" defer></script>
   <title>{title} · DIO to DIO</title>
 {schema_markup}  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
@@ -396,7 +442,7 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
         <span class="brand-divider" aria-hidden="true"></span>
         <span class="brand-project">DIO to DIO</span>
       </a>
-      <nav aria-label="Report navigation"><a href="../">All analyses</a><a href="https://github.com/dan-beranek/dio-to-dio">Repository</a></nav>
+      {report_header_navigation()}
     </div>
   </header>
   <main id="report-content">
@@ -503,6 +549,23 @@ def main() -> None:
         fail("index.html is missing its closing head element.")
     index_html = index_html.replace("</head>", home_schema + "</head>", 1)
     (OUT / "index.html").write_text(index_html, encoding="utf-8")
+
+    # Keep the shared navigation present and complete on the landing page and every report.
+    published_pages = [OUT / "index.html", *sorted((OUT / "analyses").glob("*.html"))]
+    css_text = (OUT / "assets" / "css" / "site.css").read_text(encoding="utf-8")
+    if "position: sticky;" not in css_text or "top: 0;" not in css_text:
+        fail("The shared site header must be sticky at the top of the viewport.")
+    for page_path in published_pages:
+        page_html = page_path.read_text(encoding="utf-8")
+        if 'class="primary-nav"' not in page_html or 'class="mobile-menu"' not in page_html:
+            fail(f"Missing desktop or mobile navigation in {page_path.relative_to(OUT)}")
+        if "assets/js/site.js" not in page_html:
+            fail(f"Missing navigation behaviour script in {page_path.relative_to(OUT)}")
+        for resource_url, _ in EXTERNAL_RESOURCES:
+            escaped_url = html.escape(resource_url, quote=True)
+            if escaped_url not in page_html:
+                fail(f"Missing external resource in {page_path.relative_to(OUT)}: {resource_url}")
+
 
     (OUT / "source-integrity.json").write_text(json.dumps({
         "algorithm": "SHA-256",
