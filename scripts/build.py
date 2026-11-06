@@ -370,7 +370,11 @@ def resource_menu(mobile: bool = False) -> str:
     links_class = "mobile-resource-links" if mobile else "resource-links"
     panel_id = "mobile-external-resources" if mobile else "desktop-external-resources"
     links = "\n            ".join(
-        f'<a{" class=\"partnership-link\"" if len(item) > 2 and item[2] == "partnership-link" else ""} href="{html.escape(item[0], quote=True)}" target="_blank" rel="noopener noreferrer">{html.escape(item[1])}<span aria-hidden="true">↗</span></a>'
+        (
+            f'<a class="{item[2]}" href="{html.escape(item[0], quote=True)}" target="_blank" rel="noopener noreferrer">{html.escape(item[1])}<span aria-hidden="true">↗</span></a>'
+            if len(item) > 2
+            else f'<a href="{html.escape(item[0], quote=True)}" target="_blank" rel="noopener noreferrer">{html.escape(item[1])}<span aria-hidden="true">↗</span></a>'
+        )
         for item in EXTERNAL_RESOURCES
     )
     if mobile:
