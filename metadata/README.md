@@ -2,7 +2,7 @@
 
 `analyses.json` provides the factual identification layer used by the landing-page catalogue, report-page descriptions, and machine-readable project index.
 
-The catalogue has nine records. Each record identifies its own report and points to its exact Markdown and PDF source files. Descriptions and graph-method notes were written after inspection of the corresponding report.
+The catalogue contains one record per report. Each record identifies its own report and points to its exact Markdown and PDF source files. Descriptions and graph-method notes were written after inspection of the corresponding report.
 
 ## Field meanings
 
@@ -32,7 +32,7 @@ No ranking, scoring, shared finding taxonomy, or automatic meta-analysis is gene
 - The person's ORCID is linked through `sameAs`: `https://orcid.org/0009-0004-0050-0264`.
 - The portfolio is represented as a `ResearchProject`, with the person identified as its founder. The person is also identified as publisher of the website and report pages.
 - The website and each report page reuse the same Person, WebSite, and ResearchProject identifiers.
-- Individual LLM outputs are represented as `CreativeWork` records. The person is identified as publisher/curator of the portfolio, not as the author of model-generated report text.
+- Author-led reports produced using LLMs are represented as `CreativeWork` records. The person is identified as founder and publisher/curator of the portfolio; report-level authorship statements and the documented role of each model remain in the original report.
 - Observation snapshots are not converted into publication dates.
 
 Update this file when the canonical author identity, ORCID, project identity, or website-level description changes. Generated JSON-LD is emitted by `scripts/build.py`; do not maintain separate hand-written graphs in the HTML templates.
@@ -41,7 +41,7 @@ Update this file when the canonical author identity, ORCID, project identity, or
 
 `structured-data.json` is the shared source of truth for the canonical Person, website, project, and Dataset identity.
 
-- The Dataset is a curated collection of nine independent model-generated reports. Identifying the Dataset creator/curator does not attribute the generated report text to that person.
+- The Dataset is a curated collection of author-led research reports produced using LLMs. Project-level creator/curator metadata does not replace the report-specific authorship and AI-use statements preserved in each source.
 - Dataset subjects use the exact canonical SKOS concept URIs for DIO and ODI from the DIO/ODI Reference Vocabulary. No local or duplicate concept identifiers are minted.
 - The build emits Schema.org `Dataset` and `DataDownload` nodes on the landing page and report pages.
 - The build also emits a DCAT 3 catalogue in `dataset.jsonld` and `dataset.ttl`. Each report has Markdown, PDF, and HTML distributions with explicit media types and stable access URLs.

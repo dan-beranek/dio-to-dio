@@ -116,6 +116,18 @@
       "markdown": "reports/markdown/Qwen-Implementation-Distribution-Reconstructability.md",
       "pdf": "reports/pdf/Qwen-Implementation-Distribution-Reconstructability.pdf",
       "html": "analyses/qwen.html"
+    },
+    {
+      "id": "grok",
+      "model": "Grok",
+      "title": "Distributed Reconstructability of Digital Identity Optimization (DIO) and the Ontology of Digital Identity (ODI): A Snapshot Analysis of Implementation and Continuity",
+      "observation_snapshot": "Early November 2026",
+      "description": "An author-led snapshot analysis of DIO/ODI reconstructability across heterogeneous representations and entry points. It examines conceptual continuity, multilingual distribution, machine-readable layers, provenance and versioning, and compares the Zenodo corpus with the manifesto hub. Its materiality assessment considers version misalignment, route-specific acquisition limits, hub concentration, and unverified semantic fidelity.",
+      "graph_approach": "Uses a qualitative heterogeneous network of publications and versions, web and language pages, stable concept URIs, repository artifacts, archival records and DOIs, identity records, and AI context files. Relations include hyperlinks, citations, SKOS links, canonical and language-alternate declarations, attribution, version, and provenance. The report describes a hub-and-spoke topology with partial cross-layer meshing; it does not compute a complete adjacency matrix or quantitative node-removal reachability.",
+      "prompt_arrangement": "Author-led prompt sequence comprising an initial research assignment, follow-up methodological clarification, Grok-specific correction, and final integration instruction; all four components are reproduced in the appendix.",
+      "markdown": "reports/markdown/Grok-Distributed-Reconstructability-DIO-ODI-Snapshot-Analysis.md",
+      "pdf": "reports/pdf/Grok-Distributed-Reconstructability-DIO-ODI-Snapshot-Analysis.pdf",
+      "html": "analyses/grok.html"
     }
   ]
 }

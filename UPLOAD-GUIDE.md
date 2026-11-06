@@ -1,6 +1,6 @@
 # Repository guide — source reports and publishing
 
-This repository already contains the nine original Markdown reports and their nine matching PDFs. It is the source of truth for the public DIO to DIO research portfolio.
+This repository contains the original Markdown reports and their matching PDFs. It is the source of truth for the public DIO to DIO research portfolio.
 
 ## Source locations
 
@@ -35,7 +35,7 @@ python3 scripts/build.py
 The public Markdown, PDF, and HTML links are intended to open in the browser; no `download` attribute is applied. GitHub Pages does not provide general per-file HTTP-header configuration, so the final deployment should be checked to confirm that Markdown is served as browser-readable text.
 
 The build stops if:
-- the catalogue does not contain exactly nine reports;
+- a Markdown/PDF source pair has no matching catalogue record, or the catalogue references an unavailable source;
 - a listed Markdown or PDF source is missing;
 - a Markdown/PDF filename pair does not match;
 - the files in the source folders do not match the catalogue inventory;
@@ -47,7 +47,7 @@ The build then:
 - renders the Markdown source to HTML using Pandoc;
 - keeps the report body separate from factual catalogue metadata;
 - copies the original Markdown and PDF sources into the deployable output unchanged;
-- records SHA-256 digests for all 18 source documents;
+- records SHA-256 digests for all original Markdown and PDF source documents;
 - generates the landing-page cards with the consistent `Markdown · PDF · HTML` browser links, individual report pages, sitemap, robots.txt, and llms.txt;
 - emits Schema.org Dataset/DataDownload nodes and DCAT 3 JSON-LD/Turtle catalogues with explicit distributions, canonical DIO/ODI SKOS subject links, media types, and SHA-256 checksums for the original Markdown/PDF files.
 
