@@ -359,11 +359,10 @@ def card(record: dict, index: int, total: int) -> str:
 
 EXTERNAL_RESOURCES = [
     ("https://danielberanek.cz/manifest-dio/", "DIO/ODI Hub"),
-    ("https://vocab.danielberanek.cz/dio-odi/", "Reference Vocabulary & Model"),
-    ("https://dan-beranek.github.io/dio-odi-autorsky-koncept/en/partnerships/", "DIO/ODI Partnerships"),
-    ("https://zenodo.org/search?q=metadata.creators.person_or_org.name%3A%22Ber%C3%A1nek%2C%20Daniel%22&l=list&p=1&s=10&sort=bestmatch", "Publications on Zenodo"),
+    ("https://zenodo.org/search?q=metadata.creators.person_or_org.name%3A%22Ber%C3%A1nek%2C%20Daniel%22&l=list&p=1&s=10&sort=bestmatch", "Zenodo"),
     ("https://orcid.org/0009-0004-0050-0264", "Author profile (ORCID)"),
-    ("https://github.com/dan-beranek/dio-odi-reference-model", "Reference Model repository (GitHub)"),
+    ("https://vocab.danielberanek.cz/dio-odi/", "Reference Vocabulary & Model"),
+    ("https://dan-beranek.github.io/dio-odi-autorsky-koncept/en/partnerships/", "Collaboration pathways"),
 ]
 
 
