@@ -578,7 +578,7 @@ def main() -> None:
             fail(f"Missing accessible desktop external-resources trigger in {page_path.relative_to(OUT)}")
         if "assets/js/site.js" not in page_html:
             fail(f"Missing navigation behaviour script in {page_path.relative_to(OUT)}")
-        for resource_url, _ in EXTERNAL_RESOURCES:
+        for resource_url, *_ in EXTERNAL_RESOURCES:
             escaped_url = html.escape(resource_url, quote=True)
             if escaped_url not in page_html:
                 fail(f"Missing external resource in {page_path.relative_to(OUT)}: {resource_url}")
