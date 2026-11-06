@@ -370,25 +370,25 @@ EXTERNAL_RESOURCES = [
 def resource_menu(mobile: bool = False) -> str:
     links_class = "mobile-resource-links" if mobile else "resource-links"
     panel_id = "mobile-external-resources" if mobile else "desktop-external-resources"
-    links = "\\n            ".join(
+    links = "\n            ".join(
         f'<a href="{html.escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">{html.escape(label)}<span aria-hidden="true">↗</span></a>'
         for url, label in EXTERNAL_RESOURCES
     )
     if mobile:
-        return f\'''<details class="mobile-resource-nav">
+        return f'''<details class="mobile-resource-nav">
           <summary aria-controls="{panel_id}">External resources <span class="resource-chevron" aria-hidden="true"></span></summary>
           <div class="{links_class}" id="{panel_id}">
             {links}
           </div>
-        </details>\'''
-    return f\'''<div class="resource-nav">
+        </details>'''
+    return f'''<div class="resource-nav">
           <button class="resource-trigger" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="{panel_id}">
             External resources <span class="resource-chevron" aria-hidden="true"></span>
           </button>
           <div class="{links_class}" id="{panel_id}">
             {links}
           </div>
-        </div>\'''
+        </div>'''
 
 
 def report_header_navigation() -> str:
