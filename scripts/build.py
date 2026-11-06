@@ -390,7 +390,7 @@ def report_header_navigation() -> str:
         {resource_menu()}
       </nav>'''
     mobile = f'''<details class="mobile-menu">
-        <summary class="mobile-menu-toggle" aria-label="Open navigation"><span class="menu-icon" aria-hidden="true"></span></summary>
+        <summary class="mobile-menu-toggle" aria-label="Toggle navigation"><span class="menu-icon" aria-hidden="true"></span></summary>
         <div class="mobile-menu-panel">
           <nav aria-label="Mobile navigation">
             <a href="../">All analyses</a>
@@ -559,6 +559,8 @@ def main() -> None:
         page_html = page_path.read_text(encoding="utf-8")
         if 'class="primary-nav"' not in page_html or 'class="mobile-menu"' not in page_html:
             fail(f"Missing desktop or mobile navigation in {page_path.relative_to(OUT)}")
+        if "assets/js/site.js" not in page_html:
+            fail(f"Missing navigation behaviour script in {page_path.relative_to(OUT)}")
         for resource_url, _ in EXTERNAL_RESOURCES:
             escaped_url = html.escape(resource_url, quote=True)
             if escaped_url not in page_html:

@@ -167,3 +167,8 @@ h3 { margin: 1.7rem 0 .7rem; font-size: 1.3rem; letter-spacing: -.02em; }
   .report-body { margin-top: 2rem; font-size: 1rem; }
   .report-body table { font-size: .75rem; }
 }
+
+/* Keep the first mobile navigation item visible on narrow screens. */
+@media (max-width: 520px) {
+  .mobile-menu-panel nav > a:first-child { display: block; }
+}
