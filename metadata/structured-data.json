@@ -15,7 +15,7 @@
   },
   "project": {
     "name": "DIO to DIO",
-    "description": "An author-led reflexive research project using large language models to examine how Digital Identity Optimization (DIO) and the Ontology of Digital Identity (ODI) are reconstructed when applied to their own distributed ecosystem. The author defines and directs the research; each report retains its own model-specific analytical approach and documented prompt arrangement. The reports are not ranked, harmonized, or synthesized.",
+    "description": "An author-led reflexive research project using large language models to examine how Digital Identity Optimization (DIO) and the Ontology of Digital Identity (ODI) are reconstructed when applied to their own distributed ecosystem. All ten analyses share one research design and prompt design. Nine models received the prompt in three sequential phases, with a model-specific clarification in phase two; Leo AI received one integrated prompt consolidating the substantive content of all three phases. The reports retain distinct analytical approaches and are not ranked, harmonized, or synthesized.",
     "sameAs": [
       "https://github.com/dan-beranek/dio-to-dio"
     ]
@@ -23,7 +23,7 @@
   "dataset": {
     "@id": "https://dan-beranek.github.io/dio-to-dio/#dataset",
     "name": "DIO to DIO: Author-Led LLM Research Reports on DIO/ODI",
-    "description": "A curated research dataset of author-led reports examining the distributed DIO/ODI ecosystem through large-language-model-assisted research. The author defines and directs the research; models provide distinct analyses under report-specific prompt arrangements. Each report is preserved as an unchanged Markdown and PDF source alongside a faithful HTML representation. The reports retain their own analytical approaches and are not ranked, harmonized, or synthesized.",
+    "description": "A curated research dataset of ten author-led reports examining the distributed DIO/ODI ecosystem through large-language-model-assisted research. All reports share one author-designed research and prompt framework. Nine were delivered through the same three sequential phases, including a model-specific clarification in phase two; Leo AI received one integrated prompt consolidating the substantive content of all three phases. Each report is preserved as an unchanged Markdown and PDF source alongside a faithful HTML representation. The reports retain their own analytical approaches and are not ranked, harmonized, or synthesized.",
     "about": [
       "https://vocab.danielberanek.cz/dio-odi/#DIO",
       "https://vocab.danielberanek.cz/dio-odi/#ODI"

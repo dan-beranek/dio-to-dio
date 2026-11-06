@@ -12,7 +12,7 @@ The catalogue contains one record per report. Each record identifies its own rep
 - `observation_snapshot`: the observation date or interval stated by the report. This is not automatically treated as the document publication date.
 - `description`: a short report-specific account of its actual focus.
 - `graph_approach`: the graph representation, units, relation types, and/or observation boundary as described by that report. These descriptions are intentionally not normalized to a common schema.
-- `prompt_arrangement`: a factual description of the prompt arrangement documented in the report appendix. It does not infer the number of separate user turns.
+- `prompt_arrangement`: a factual description of how the common research prompt design was delivered for the report, including the integrated single-prompt delivery used for Leo AI. The nine sequentially delivered reports share the same three-phase design; model-specific second-phase clarifications may use different local labels (such as addendum or correction). These labels describe adaptations within the common design, not separate methodologies. The field does not infer the number of separate user turns.
 - `markdown`, `pdf`: paths to the unchanged source documents.
 - `html`: output path of the generated HTML representation.
 
@@ -21,6 +21,8 @@ The catalogue contains one record per report. Each record identifies its own rep
 Catalogue metadata is not part of the source report. It may identify and describe the report, but it must not replace the report's analysis, add editorial findings, or imply a shared conclusion across models.
 
 The project-level research question describes the common object of inquiry. It does not serve as a mandatory report-level question and does not override any model-specific framing.
+
+The prompt design is common across all ten analyses. Nine models received it in three sequential phases; the second phase included a model-specific clarification whose heading or label varies between reports. Leo AI received one integrated prompt that consolidated the substantive content of all three phases. This difference concerns prompt delivery, not the underlying research design.
 
 No ranking, scoring, shared finding taxonomy, or automatic meta-analysis is generated from these records.
 
