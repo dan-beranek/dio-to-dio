@@ -371,25 +371,25 @@ def resource_menu(mobile: bool = False) -> str:
     menu_class = "mobile-resource-nav" if mobile else "resource-nav"
     links_class = "mobile-resource-links" if mobile else "resource-links"
     panel_id = "mobile-external-resources" if mobile else "desktop-external-resources"
-    links = "\\n            ".join(
+    links = "\n            ".join(
         f'<a href="{html.escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">{html.escape(label)}<span aria-hidden="true">↗</span></a>'
         for url, label in EXTERNAL_RESOURCES
     )
-    return f\'''<details class="{menu_class}">
+    return f'''<details class="{menu_class}">
           <summary aria-controls="{panel_id}">External resources <span class="resource-chevron" aria-hidden="true"></span></summary>
           <div class="{links_class}" id="{panel_id}">
             {links}
           </div>
-        </details>\'''
+        </details>'''
 
 
 def report_header_navigation() -> str:
-    desktop = f\'''<nav class="primary-nav" aria-label="Report navigation">
+    desktop = f'''<nav class="primary-nav" aria-label="Report navigation">
         <a href="../">All analyses</a>
         <a href="https://github.com/dan-beranek/dio-to-dio">Source repository</a>
         {resource_menu()}
-      </nav>\'''
-    mobile = f\'''<details class="mobile-menu">
+      </nav>'''
+    mobile = f'''<details class="mobile-menu">
         <summary class="mobile-menu-toggle" aria-label="Open navigation"><span class="menu-icon" aria-hidden="true"></span></summary>
         <div class="mobile-menu-panel">
           <nav aria-label="Mobile navigation">
@@ -398,8 +398,8 @@ def report_header_navigation() -> str:
             {resource_menu(True)}
           </nav>
         </div>
-      </details>\'''
-    return desktop + "\\n      " + mobile
+      </details>'''
+    return desktop + "\n      " + mobile
 
 
 def report_page(record: dict, index: int, total: int, html_fragment: str, site_url: str, structured_data: dict, integrity_records: list, all_records: list) -> str:
