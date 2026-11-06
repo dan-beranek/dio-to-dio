@@ -393,7 +393,7 @@ def resource_menu(mobile: bool = False) -> str:
 def report_header_navigation() -> str:
     desktop = f'''<nav class="primary-nav" aria-label="Report navigation">
         <a href="../">All analyses</a>
-        <a href="https://github.com/dan-beranek/dio-to-dio">Source repository</a>
+        <a href="https://github.com/dan-beranek/dio-to-dio" target="_blank" rel="noopener noreferrer">Website repository (GitHub)</a>
         {resource_menu()}
       </nav>'''
     mobile = f'''<details class="mobile-menu">
@@ -454,7 +454,7 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
   </header>
   <main id="report-content">
     <section class="report-intro shell">
-      <p class="eyebrow">Independent model analysis · {index:02d} / {total:02d}</p>
+      <p class="eyebrow">Author-led research report · {index:02d} / {total:02d}</p>
       <h1>{model}</h1>
       <p class="report-title-meta">{title}</p>
       <div class="report-source-links"><a href="{md_link}">Markdown</a><a href="{pdf_link}">PDF</a><a href="../{html.escape(record["html"], quote=True)}">HTML</a></div>
@@ -490,8 +490,11 @@ def main() -> None:
     records = metadata.get("analyses", [])
     structured_data = json.loads((ROOT / "metadata" / "structured-data.json").read_text(encoding="utf-8"))
     validate_structured_data(structured_data)
-    if len(records) != 9:
-        fail(f"Expected 9 analyses in metadata, found {len(records)}")
+    if not records:
+        fail("The report catalogue must contain at least one analysis.")
+    record_ids = [record.get("id") for record in records]
+    if any(not record_id for record_id in record_ids) or len(record_ids) != len(set(record_ids)):
+        fail("Every report must have a non-empty, unique catalogue id.")
 
     source_md_dir = ROOT / "reports" / "markdown"
     source_pdf_dir = ROOT / "reports" / "pdf"
@@ -574,6 +577,14 @@ def main() -> None:
             escaped_url = html.escape(resource_url, quote=True)
             if escaped_url not in page_html:
                 fail(f"Missing external resource in {page_path.relative_to(OUT)}: {resource_url}")
+        project_repository = "https://github.com/dan-beranek/dio-to-dio"
+        if page_path == OUT / "index.html":
+            if project_repository not in page_html or "Website repository (GitHub)" not in page_html:
+                fail("The landing page must link to the repository that publishes this website.")
+        else:
+            repository_link = f'<a href="{project_repository}" target="_blank" rel="noopener noreferrer">Website repository (GitHub)</a>'
+            if repository_link not in page_html:
+                fail(f"Missing website repository link in {page_path.relative_to(OUT)}")
 
 
     (OUT / "source-integrity.json").write_text(json.dumps({
@@ -596,13 +607,13 @@ def main() -> None:
     llms_lines = [
         "# DIO to DIO", "",
         "A reflexive research portfolio examining how large language models reconstruct Digital Identity Optimization (DIO) and the Ontology of Digital Identity (ODI) when the framework is applied to its own distributed ecosystem.", "",
-        "The portfolio preserves nine independent reports. It does not rank, harmonize, or synthesize their interpretations. Report descriptions are factual catalogue metadata; each report is available as unchanged Markdown and PDF sources plus a faithful HTML representation.", "",
+        "The portfolio presents author-led research reports using large language models. The author defines and directs the research; model contributions and prompt arrangements are documented report by report. The reports retain distinct analytical approaches and are not ranked, harmonized, or synthesized. Each is available as unchanged Markdown and PDF sources plus a faithful HTML representation.", "",
         "## Project", f"- Home: {site_url}", "- Repository: https://github.com/dan-beranek/dio-to-dio", "",
         "## Machine-readable dataset metadata",
         f"- DCAT JSON-LD: {urljoin(site_url, 'dataset.jsonld')}",
         f"- DCAT Turtle: {urljoin(site_url, 'dataset.ttl')}",
         f"- Source integrity manifest: {urljoin(site_url, 'source-integrity.json')}", "",
-        "## Independent reports"
+        "## Reports"
     ]
     for record in records:
         llms_lines.extend([

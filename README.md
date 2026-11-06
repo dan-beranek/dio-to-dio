@@ -2,17 +2,17 @@
 
 **A reflexive research portfolio on the reconstruction of Digital Identity Optimization (DIO) and the Ontology of Digital Identity (ODI) by large language models.**
 
-The public portfolio brings together nine independent model-generated research reports. DIO/ODI is both the subject of inquiry and the conceptual perspective through which each model examines the distributed ecosystem.
+The public portfolio brings together author-led research reports produced using different large language models. The author defines and directs the research; each model contributes a distinct analytical reading of the distributed DIO/ODI ecosystem.
 
 ## Research design
 
 The common research assignment establishes the object of inquiry and broad analytical directions: DIO/ODI-native exploration and graph-theoretical examination. It does not prescribe a single interpretation, graph schema, node/edge taxonomy, observation boundary, metric set, or conclusion.
 
-Each report retains its own analytical framing, methodological choices, evidence boundary, graph model, appendices, and conclusions. Eight reports document staged prompt components in their appendices; Leo AI documents one author-designed integrated prompt. The reports are not ranked or harmonized.
+Each report retains its own analytical framing, methodological choices, evidence boundary, graph model, appendices, and conclusions. Eight reports document staged prompt components; Leo AI documents one author-designed integrated prompt; Grok preserves an author-led sequence comprising an initial assignment, methodological clarification, model-specific correction, and final integration instruction. The reports are not ranked or harmonized.
 
 The project-level research question is:
 
-> How do large language models reconstruct and examine Digital Identity Optimization (DIO) when the framework is applied to itself, and what do their independently developed interpretations and graph-theoretical analyses reveal about the DIO/ODI ecosystem?
+> How do large language models reconstruct and examine Digital Identity Optimization (DIO) when the framework is applied to itself, and what do their distinct interpretations and graph-theoretical analyses reveal about the DIO/ODI ecosystem?
 
 ## Publication principles
 
@@ -38,8 +38,8 @@ The project-level research question is:
 │   ├── analyses.json          # Factual report catalogue
 │   └── structured-data.json   # Person, project, website, Dataset and DIO/ODI subjects
 ├── reports/
-│   ├── markdown/              # Nine original LLM reports
-│   └── pdf/                   # Nine original PDFs
+│   ├── markdown/              # Original author-led research reports
+│   └── pdf/                   # Original PDFs
 ├── scripts/
 │   ├── build.py               # Static site generator
 │   └── filters/preserve-title.lua
@@ -59,7 +59,7 @@ From the repository root:
 python3 scripts/build.py
 ```
 
-The build verifies the nine Markdown/PDF pairs and their exact filename matching, checks that the catalogue and source inventory agree, copies source files without modifying them, calculates SHA-256 hashes for the published source-integrity manifest, and generates the static pages, sitemap, robots.txt, and `llms.txt`.
+The build verifies every Markdown/PDF pair and exact filename matching, checks that the catalogue and source inventory agree, copies source files without modifying them, calculates SHA-256 hashes for the published source-integrity manifest, and generates the static pages, sitemap, robots.txt, and `llms.txt`.
 
 ## GitHub Pages
 
