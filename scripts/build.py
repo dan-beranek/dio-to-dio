@@ -362,7 +362,7 @@ EXTERNAL_RESOURCES = [
     ("https://zenodo.org/search?q=metadata.creators.person_or_org.name%3A%22Ber%C3%A1nek%2C%20Daniel%22&l=list&p=1&s=10&sort=bestmatch", "Zenodo"),
     ("https://orcid.org/0009-0004-0050-0264", "Author profile (ORCID)"),
     ("https://vocab.danielberanek.cz/dio-odi/", "Reference Vocabulary & Model"),
-    ("https://dan-beranek.github.io/dio-odi-autorsky-koncept/en/partnerships/", "Partnership proposal"),
+    ("https://dan-beranek.github.io/dio-odi-autorsky-koncept/en/partnerships/", "Partnership Proposal", "partnership-link"),
 ]
 
 
@@ -370,8 +370,8 @@ def resource_menu(mobile: bool = False) -> str:
     links_class = "mobile-resource-links" if mobile else "resource-links"
     panel_id = "mobile-external-resources" if mobile else "desktop-external-resources"
     links = "\n            ".join(
-        f'<a href="{html.escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">{html.escape(label)}<span aria-hidden="true">↗</span></a>'
-        for url, label in EXTERNAL_RESOURCES
+        f'<a{" class=\"partnership-link\"" if len(item) > 2 and item[2] == "partnership-link" else ""} href="{html.escape(item[0], quote=True)}" target="_blank" rel="noopener noreferrer">{html.escape(item[1])}<span aria-hidden="true">↗</span></a>'
+        for item in EXTERNAL_RESOURCES
     )
     if mobile:
         return f'''<details class="mobile-resource-nav">

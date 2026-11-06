@@ -399,3 +399,21 @@ html { scroll-padding-top: 6rem; }
 @media (max-width: 520px) {
   .mobile-menu-panel nav > a:first-child { display: block; }
 }
+
+/* Visually distinguish the partnership invitation from reference links. */
+.resource-links a.partnership-link,
+.mobile-resource-links a.partnership-link {
+  margin-top: .28rem;
+  border: 1px solid var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+  font-weight: 760;
+}
+.resource-links a.partnership-link:hover,
+.resource-links a.partnership-link:focus-visible,
+.mobile-resource-links a.partnership-link:hover,
+.mobile-resource-links a.partnership-link:focus-visible {
+  background: var(--blue-dark);
+  border-color: var(--blue-dark);
+  color: #fff;
+}
