@@ -186,7 +186,7 @@ html { scroll-padding-top: 6rem; }
   gap: clamp(.7rem, 1.35vw, 1.35rem);
 }
 .primary-nav > a,
-.resource-nav > summary {
+.resource-trigger {
   color: #3c4350;
   font-size: .83rem;
   font-weight: 680;
@@ -196,17 +196,32 @@ html { scroll-padding-top: 6rem; }
 }
 .primary-nav > a:hover,
 .primary-nav > a:focus-visible,
-.resource-nav > summary:hover,
-.resource-nav > summary:focus-visible { color: var(--blue); }
-.resource-nav { position: relative; }
-.resource-nav > summary {
+.resource-trigger:hover,
+.resource-trigger:focus-visible { color: var(--blue); }
+.resource-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.resource-trigger {
   display: flex;
   align-items: center;
   gap: .45rem;
+  padding: 1.76rem 0 1.65rem;
+  border: 0;
+  background: transparent;
+  color: #3c4350;
   cursor: pointer;
-  list-style: none;
+  font: inherit;
+  font-size: .83rem;
+  font-weight: 680;
+  line-height: 1.2;
+  white-space: nowrap;
 }
-.resource-nav > summary::-webkit-details-marker,
+.resource-trigger:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 4px;
+}
 .mobile-resource-nav > summary::-webkit-details-marker,
 .mobile-menu-toggle::-webkit-details-marker { display: none; }
 .resource-chevron {
@@ -217,10 +232,12 @@ html { scroll-padding-top: 6rem; }
   transform: translateY(-.12rem) rotate(45deg);
   transition: transform 160ms ease;
 }
-.resource-nav[open] > summary .resource-chevron { transform: translateY(.08rem) rotate(225deg); }
+.resource-nav:is(:hover, :focus-within, [data-open="true"]) > .resource-trigger .resource-chevron {
+  transform: translateY(.08rem) rotate(225deg);
+}
 .resource-links {
   position: absolute;
-  top: calc(100% + 1.3rem);
+  top: calc(100% + .5rem);
   right: 0;
   z-index: 110;
   display: grid;
@@ -230,6 +247,27 @@ html { scroll-padding-top: 6rem; }
   border-radius: var(--radius);
   background: rgba(255, 255, 255, .99);
   box-shadow: 0 18px 44px rgba(8, 11, 18, .14);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(.3rem);
+  transition: opacity 150ms ease, transform 150ms ease, visibility 150ms ease;
+}
+.resource-links::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -.55rem;
+  height: .55rem;
+}
+.resource-nav:hover > .resource-links,
+.resource-nav:focus-within > .resource-links,
+.resource-nav[data-open="true"] > .resource-links {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 .resource-links a {
   display: flex;
