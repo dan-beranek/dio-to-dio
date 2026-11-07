@@ -550,6 +550,7 @@ html { scroll-padding-top: 6rem; }
   transform: rotate(225deg);
 }
 .report-toc-panel {
+  display: block;
   position: absolute;
   top: 50%;
   left: calc(100% + .55rem);
