@@ -32,9 +32,15 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 def render_markdown(source: Path, filter_path: Path) -> str:
+    filters = [filter_path]
+    if source.name == "Claude-DIO-ODI-Reflexive-Analysis-Reconstruction-Resilience.md":
+        table_filter = ROOT / "scripts" / "filters" / "claude-table-cards.lua"
+        if not table_filter.is_file():
+            fail("Missing Claude Chapter 8 table-presentation filter.")
+        filters.append(table_filter)
     command = [
         "pandoc", f"--from={PANDOC_FROM}", "--to=html5", "--wrap=none",
-        "--mathjax", f"--lua-filter={filter_path}", str(source)
+        "--mathjax", *[f"--lua-filter={item}" for item in filters], str(source)
     ]
     result = subprocess.run(command, cwd=ROOT, text=True, encoding="utf-8", capture_output=True)
     if result.returncode != 0:
@@ -612,7 +618,7 @@ def main() -> None:
     llms_lines = [
         "# DIO to DIO", "",
         "A reflexive research portfolio examining how large language models reconstruct Digital Identity Optimization (DIO) and the Ontology of Digital Identity (ODI) when the framework is applied to its own distributed ecosystem.", "",
-        "The portfolio presents ten author-led research reports using large language models. All ten share one author-designed research and prompt framework. Nine models received the prompt in three sequential phases, with a model-specific clarification in phase two; the local label for this component varies by report. Leo AI received one integrated prompt consolidating the substantive content of all three phases. These differences concern prompt delivery, not the research design. The reports retain distinct analytical approaches and are not ranked, harmonized, or synthesized. Each is available as unchanged Markdown and PDF sources plus a faithful HTML representation.", "",
+        "The portfolio presents eleven author-led research reports using large language models. All eleven share one author-designed research and prompt framework. Ten models received the prompt in three sequential phases, with a model-specific clarification in phase two; the local label for this component varies by report. Leo AI received one integrated prompt consolidating the substantive content of all three phases. These differences concern prompt delivery, not the research design. The reports retain distinct analytical approaches and are not ranked, harmonized, or synthesized. Each is available as unchanged Markdown and PDF sources plus a faithful HTML representation.", "",
         "## Project", f"- Home: {site_url}", "- Repository: https://github.com/dan-beranek/dio-to-dio", "",
         "## Machine-readable dataset metadata",
         f"- DCAT JSON-LD: {urljoin(site_url, 'dataset.jsonld')}",
