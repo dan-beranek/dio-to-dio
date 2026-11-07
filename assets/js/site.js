@@ -74,4 +74,43 @@
       if (menu.matches(".mobile-resource-nav, .mobile-menu")) menu.open = false;
     });
   });
+  const reportToc = document.querySelector("[data-report-toc]");
+  if (reportToc) {
+    const toggle = reportToc.querySelector(".report-toc-toggle");
+    const panel = reportToc.querySelector(".report-toc-panel");
+    const close = reportToc.querySelector(".report-toc-close");
+
+    const setReportTocOpen = (open) => {
+      reportToc.dataset.open = String(open);
+      toggle.setAttribute("aria-expanded", String(open));
+      panel.setAttribute("aria-hidden", String(!open));
+    };
+
+    toggle.addEventListener("click", () => {
+      setReportTocOpen(reportToc.dataset.open !== "true");
+    });
+
+    close.addEventListener("click", () => {
+      setReportTocOpen(false);
+      toggle.focus();
+    });
+
+    panel.addEventListener("click", (event) => {
+      if (event.target.closest("a")) setReportTocOpen(false);
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+      if (reportToc.dataset.open === "true" && !reportToc.contains(event.target)) {
+        setReportTocOpen(false);
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && reportToc.dataset.open === "true") {
+        setReportTocOpen(false);
+        toggle.focus();
+      }
+    });
+  }
+
 })();
