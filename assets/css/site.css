@@ -654,7 +654,44 @@ html { scroll-padding-top: 6rem; }
 .report-body h4[id] { scroll-margin-top: 6.5rem; }
 @media (max-width: 520px) {
   .report-toc-toggle { width: 2.5rem; min-height: 7rem; }
-  .report-toc-panel { max-height: 76vh; padding: .85rem; }
+  .report-toc-panel {
+    display: block !important;
+    width: min(21rem, calc(100vw - 3.4rem));
+    max-height: 76dvh;
+    padding: .85rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .report-toc-panel > .report-toc-list {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    opacity: 1 !important;
+    overflow: visible;
+  }
+  .report-toc-panel .report-toc-list .report-toc-item {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    width: 100%;
+    height: auto;
+    margin: .08rem 0;
+    padding: 0;
+    opacity: 1 !important;
+  }
+  .report-toc-panel .report-toc-item > a {
+    display: block !important;
+    visibility: visible !important;
+    width: 100%;
+    color: #374151;
+    opacity: 1 !important;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .report-toc-toggle-chevron,
