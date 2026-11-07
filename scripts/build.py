@@ -124,7 +124,7 @@ def report_toc_markup(html_fragment: str, page_url: str) -> str:
     <span class="report-toc-toggle-label">Contents</span>
     <span class="report-toc-toggle-chevron" aria-hidden="true"></span>
   </button>
-  <nav class="report-toc-panel" id="report-toc-panel" aria-label="Report contents">
+  <nav class="report-toc-panel" id="report-toc-panel" aria-label="Report contents" aria-hidden="true">
     <div class="report-toc-panel-header">
       <p>On this page</p>
       <button class="report-toc-close" type="button" aria-label="Close contents">×</button>
@@ -200,7 +200,6 @@ def distribution_records(records: list, site_url: str, integrity_records: list) 
 
 def report_schema_nodes(record: dict, site_url: str, config: dict) -> tuple[dict, dict]:
     page_url = urljoin(site_url, record["html"])
-    toc_markup = report_toc_markup(html_fragment, page_url)
     page_id = page_url + "#webpage"
     work_id = page_url + "#report"
     website_id = site_url + "#website"
@@ -514,6 +513,7 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
     prompt = html.escape(record["prompt_arrangement"])
     snapshot = html.escape(record["observation_snapshot"])
     page_url = urljoin(site_url, record["html"])
+    toc_markup = report_toc_markup(html_fragment, page_url)
     canonical = html.escape(page_url, quote=True)
     schema_markup = jsonld_script(build_jsonld(structured_data, site_url, all_records, integrity_records, current_record=record))
     pdf_link = html.escape(f"../sources/pdf/{Path(record['pdf']).name}", quote=True)
