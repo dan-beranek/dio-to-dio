@@ -3,7 +3,8 @@
 from __future__ import annotations
 import hashlib, html, json, re, shutil, subprocess, sys
 from pathlib import Path
-from urllib.parse import urljoin
+from html.parser import HTMLParser
+from urllib.parse import quote, urljoin
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "site"
@@ -48,6 +49,90 @@ def render_markdown(source: Path, filter_path: Path) -> str:
     if not result.stdout.strip():
         fail(f"Pandoc produced empty HTML for {source.relative_to(ROOT)}")
     return result.stdout
+
+
+
+class ReportHeadingCollector(HTMLParser):
+    """Collect linkable H2–H4 headings from the rendered report body."""
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.headings = []
+        self.current = None
+
+    def handle_starttag(self, tag: str, attrs: list) -> None:
+        if tag in ("h2", "h3", "h4") and self.current is None:
+            attributes = dict(attrs)
+            self.current = {
+                "level": int(tag[1]),
+                "id": attributes.get("id"),
+                "text": []
+            }
+
+    def handle_data(self, data: str) -> None:
+        if self.current is not None:
+            self.current["text"].append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if self.current is not None and tag == f"h{self.current['level']}":
+            heading = self.current
+            title = " ".join("".join(heading["text"]).split())
+            if title:
+                self.headings.append({
+                    "level": heading["level"],
+                    "id": heading["id"],
+                    "title": title
+                })
+            self.current = None
+
+
+def report_toc_markup(html_fragment: str, page_url: str) -> str:
+    """Build a nested, absolute-URL table of contents for one report page."""
+    parser = ReportHeadingCollector()
+    parser.feed(html_fragment)
+    parser.close()
+
+    if not parser.headings:
+        return ""
+
+    roots = []
+    stack = [(1, roots)]
+    for heading in parser.headings:
+        if not heading["id"]:
+            fail(f"Report heading has no anchor id: {heading['title']}")
+        node = {**heading, "children": []}
+        while stack[-1][0] >= node["level"]:
+            stack.pop()
+        stack[-1][1].append(node)
+        stack.append((node["level"], node["children"]))
+
+    def render_items(items: list) -> str:
+        rendered = []
+        for item in items:
+            fragment = quote(item["id"], safe="-._~")
+            href = html.escape(f"{page_url}#{fragment}", quote=True)
+            label = html.escape(item["title"])
+            children = render_items(item["children"])
+            nested = f'<ol class="report-toc-list">{children}</ol>' if children else ""
+            rendered.append(
+                f'<li class="report-toc-item report-toc-level-{item["level"]}">'
+                f'<a href="{href}">{label}</a>{nested}</li>'
+            )
+        return "\n".join(rendered)
+
+    return f"""<aside class="report-toc" data-report-toc>
+  <button class="report-toc-toggle" type="button" aria-expanded="false" aria-controls="report-toc-panel">
+    <span class="report-toc-toggle-label">Contents</span>
+    <span class="report-toc-toggle-chevron" aria-hidden="true"></span>
+  </button>
+  <nav class="report-toc-panel" id="report-toc-panel" aria-label="Report contents" aria-hidden="true">
+    <div class="report-toc-panel-header">
+      <p>On this page</p>
+      <button class="report-toc-close" type="button" aria-label="Close contents">×</button>
+    </div>
+    <ol class="report-toc-list">{render_items(roots)}</ol>
+  </nav>
+</aside>"""
+
 
 
 def validate_structured_data(config: dict) -> None:
@@ -428,6 +513,7 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
     prompt = html.escape(record["prompt_arrangement"])
     snapshot = html.escape(record["observation_snapshot"])
     page_url = urljoin(site_url, record["html"])
+    toc_markup = report_toc_markup(html_fragment, page_url)
     canonical = html.escape(page_url, quote=True)
     schema_markup = jsonld_script(build_jsonld(structured_data, site_url, all_records, integrity_records, current_record=record))
     pdf_link = html.escape(f"../sources/pdf/{Path(record['pdf']).name}", quote=True)
@@ -463,6 +549,7 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
       {report_header_navigation()}
     </div>
   </header>
+  {toc_markup}
   <main id="report-content">
     <section class="report-intro shell">
       <p class="eyebrow">Author-led research report · {index:02d} / {total:02d}</p>
