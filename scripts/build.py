@@ -53,14 +53,14 @@ def render_markdown(source: Path, filter_path: Path) -> str:
 
 
 class ReportHeadingCollector(HTMLParser):
-    """Collect linkable H2–H4 headings from the rendered report body."""
+    """Collect all linkable H1–H6 headings from the rendered report body."""
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.headings = []
         self.current = None
 
     def handle_starttag(self, tag: str, attrs: list) -> None:
-        if tag in ("h2", "h3", "h4") and self.current is None:
+        if tag in ("h1", "h2", "h3", "h4", "h5", "h6") and self.current is None:
             attributes = dict(attrs)
             self.current = {
                 "level": int(tag[1]),
@@ -95,7 +95,7 @@ def report_toc_markup(html_fragment: str, page_url: str) -> str:
         return ""
 
     roots = []
-    stack = [(1, roots)]
+    stack = [(0, roots)]
     for heading in parser.headings:
         if not heading["id"]:
             fail(f"Report heading has no anchor id: {heading['title']}")
