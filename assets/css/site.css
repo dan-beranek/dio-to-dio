@@ -494,3 +494,171 @@ html { scroll-padding-top: 6rem; }
   .report-body .report-table-card-field-primary { grid-column: auto; }
   .report-body .report-table-card-field { padding: .8rem 0; }
 }
+
+
+/* Per-report floating table of contents: tab opens an anchored, scrollable panel. */
+.report-toc {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+}
+.report-toc-toggle {
+  display: flex;
+  width: 2.75rem;
+  min-height: 8rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .85rem;
+  padding: .9rem .45rem;
+  border: 1px solid var(--blue-dark);
+  border-left: 0;
+  border-radius: 0 .4rem .4rem 0;
+  background: var(--blue-dark);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(8, 11, 18, .16);
+  cursor: pointer;
+}
+.report-toc-toggle:hover,
+.report-toc-toggle:focus-visible {
+  background: var(--blue);
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+.report-toc-toggle-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: .75rem;
+  font-weight: 780;
+  letter-spacing: .08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.report-toc-toggle-chevron {
+  width: .45rem;
+  height: .45rem;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 160ms ease;
+}
+.report-toc[data-open="true"] .report-toc-toggle-chevron {
+  transform: rotate(225deg);
+}
+.report-toc-panel {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + .55rem);
+  width: min(23rem, calc(100vw - 3.4rem));
+  max-height: min(78vh, 48rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 1rem 1.05rem 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, .99);
+  box-shadow: 0 18px 48px rgba(8, 11, 18, .2);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(.45rem, -50%);
+  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
+}
+.report-toc[data-open="true"] .report-toc-panel {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(0, -50%);
+}
+.report-toc-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .7rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--line);
+}
+.report-toc-panel-header p {
+  margin: 0;
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: .8rem;
+  font-weight: 850;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+.report-toc-close {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: .25rem;
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.report-toc-close:hover,
+.report-toc-close:focus-visible {
+  border-color: var(--blue);
+  color: var(--blue-dark);
+  outline: none;
+}
+.report-toc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.report-toc-list .report-toc-list {
+  margin: .12rem 0 .45rem .55rem;
+  padding-left: .65rem;
+  border-left: 1px solid var(--line);
+}
+.report-toc-item { margin: .08rem 0; padding: 0; }
+.report-toc-item > a {
+  display: block;
+  padding: .36rem .45rem;
+  border-radius: .2rem;
+  color: #374151;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: .78rem;
+  font-weight: 620;
+  line-height: 1.42;
+  text-decoration: none;
+}
+.report-toc-level-2 > a {
+  color: var(--ink);
+  font-weight: 780;
+}
+.report-toc-level-3 > a { font-size: .75rem; }
+.report-toc-level-4 > a {
+  color: var(--muted);
+  font-size: .72rem;
+}
+.report-toc-item > a:hover,
+.report-toc-item > a:focus-visible {
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+  outline: none;
+}
+.report-body h2[id],
+.report-body h3[id],
+.report-body h4[id] { scroll-margin-top: 6.5rem; }
+@media (max-width: 520px) {
+  .report-toc-toggle { width: 2.5rem; min-height: 7rem; }
+  .report-toc-panel { max-height: 76vh; padding: .85rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .report-toc-toggle-chevron,
+  .report-toc-panel { transition: none; }
+}
+@media print {
+  .report-toc { display: none !important; }
+}
