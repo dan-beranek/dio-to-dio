@@ -14,6 +14,15 @@ The project-level research question is:
 
 > How do large language models reconstruct and examine Digital Identity Optimization (DIO) when the framework is applied to itself, and what do their distinct interpretations and graph-theoretical analyses reveal about the DIO/ODI ecosystem?
 
+## Canonical DIO/ODI reference resources
+
+For the framework's canonical terminology and current machine-readable reference state, consult the separately maintained DIO/ODI Reference Model. Its current archived release is v0.8.0 and integrates the append-only Semantic Change Feed (SCF) as a Reference Model component. These project-level links identify the authoritative framework resources; they do not harmonize or replace the distinct interpretations and conclusions in the individual reports.
+
+- **Archived Reference Model v0.8.0:** https://doi.org/10.5281/zenodo.24056601
+- **Reference Model source repository:** https://github.com/dan-beranek/dio-odi-reference-model/
+- **Reference Vocabulary:** https://vocab.danielberanek.cz/dio-odi/
+- **Semantic Change Feed:** https://vocab.danielberanek.cz/semantic-change-feed/
+
 ## Publication principles
 
 - The original Markdown files in `reports/markdown/` are the authoritative text sources.
