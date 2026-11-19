@@ -51,3 +51,26 @@ Update this file when the canonical author identity, ORCID, project identity, or
 - Observation snapshots remain distinct from publication dates. No publication date or licence is inferred where it has not been established.
 
 The DCAT files are generated outputs. Do not edit them by hand; update the metadata and build logic instead.
+
+
+## Page-level keyword surface profiles
+
+The public portfolio has one derived page profile for its homepage and one for each of the eleven report pages. Profile IDs are defined in the canonical DIO/ODI keyword registry (`metadata/keywords.json` in the Reference Model repository) under `surface_profiles`; this repository binds those IDs to the local page paths and canonical URLs in `artifact-metadata.json`.
+
+The profiles resolve the ordered C0–C6 grammar independently for each page. The eleven report profiles preserve their distinct model-specific analytical scope; they are not copied from the common YAML frontmatter keyword list and are not harmonized into one shared taxonomy.
+
+This layer is deliberately separate from:
+- the canonical publication/work profiles in the Reference Model registry;
+- the original Markdown YAML/PDF keyword metadata, which remains unchanged;
+- the portfolio's shared Schema.org/DCAT Dataset keywords in `structured-data.json`, which remain project-level and unchanged;
+- the report `CreativeWork` entities in JSON-LD. Page keywords are attached to the corresponding `WebPage` or homepage `CollectionPage` entity only.
+
+The build fetches the canonical approved registry at build time and falls back to the committed `keyword-registry.snapshot.json` when the source cannot be fetched. It rejects unapproved or incompatible registry versions, unresolved profile IDs, non-canonical chunk order, incomplete rationale coverage, and page/path/URL mismatches.
+
+Generated outputs in `site/`:
+- `resolved-artifact-metadata.json` — resolved per-page profiles, keyword sequences, rationale coverage, page entity IDs, registry version and SHA-256;
+- `keyword-registry.resolved.json` — exact registry bytes used for the build;
+- per-page `meta keywords` and `dio-odi:keyword-profile` / `dio-odi:keyword-registry-version` tags;
+- Schema.org `keywords` on the primary page entity and a `rel="describedby"` link to the manifest.
+
+The Markdown reports and their PDF counterparts are not rewritten by this metadata layer.
