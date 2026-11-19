@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build the DIO to DIO static portfolio from unchanged Markdown/PDF sources."""
 from __future__ import annotations
-import hashlib, html, json, re, shutil, subprocess, sys
+import hashlib, html, json, re, shutil, subprocess, sys, urllib.request
 from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import quote, urljoin
@@ -31,6 +31,395 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+
+CHUNK_ORDER = [
+    "C0_identity_invariant",
+    "C1_reconstruction_environments",
+    "C2_work_positioning",
+    "C3_reconstruction_mechanics",
+    "C4_k6",
+    "C5_failures_robustness",
+    "C6_machine_readable_representation",
+]
+REGISTRY_MINIMUM = (2, 10, 0)
+REPOSITORY = "dan-beranek/dio-to-dio"
+MANIFEST_FILENAME = "resolved-artifact-metadata.json"
+REGISTRY_SNAPSHOT_FILENAME = "keyword-registry.resolved.json"
+
+
+def parse_semver(value: str) -> tuple[int, int, int]:
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", value or "")
+    if not match:
+        fail(f"Invalid canonical keyword registry version: {value!r}")
+    return tuple(map(int, match.groups()))
+
+
+def load_canonical_keyword_registry(source: dict) -> tuple[dict, str, str]:
+    raw_url = (
+        "https://raw.githubusercontent.com/"
+        f"{source['repository']}/{source['ref']}/{source['file']}"
+    )
+    fetched_from = raw_url
+    try:
+        request = urllib.request.Request(
+            raw_url,
+            headers={"Accept": "application/json", "User-Agent": "DIO-to-DIO-metadata-builder"}
+        )
+        with urllib.request.urlopen(request, timeout=20) as response:
+            registry_text = response.read().decode("utf-8")
+    except Exception as exc:
+        snapshot = ROOT / safe_relative(source["snapshot_path"])
+        if not snapshot.is_file():
+            fail(
+                "Unable to fetch the canonical DIO/ODI keyword registry and no "
+                f"committed snapshot is available: {exc}"
+            )
+        registry_text = snapshot.read_text(encoding="utf-8")
+        fetched_from = source["snapshot_path"]
+
+    try:
+        registry = json.loads(registry_text)
+    except json.JSONDecodeError as exc:
+        fail(f"Canonical keyword registry is not valid JSON: {exc}")
+
+    version = parse_semver(registry.get("registry_version", ""))
+    if (
+        registry.get("status") != source.get("status_required")
+        or version[0] != int(source.get("compatible_major", -1))
+        or version < REGISTRY_MINIMUM
+    ):
+        fail(
+            "Expected canonical-approved keyword registry >= 2.10.0 "
+            f"within compatible major 2; received {registry.get('registry_version')!r} "
+            f"with status {registry.get('status')!r}."
+        )
+    return registry, registry_text, fetched_from
+
+
+def resolve_surface_profile(registry: dict, profile_id: str, profile: dict) -> dict:
+    if profile.get("status") != "canonical-approved":
+        fail(f"{profile_id}: surface profile is not canonical-approved.")
+    if profile.get("scope") != "derived-public-webpage":
+        fail(f"{profile_id}: expected scope derived-public-webpage.")
+
+    selectors = profile.get("chunks", {})
+    chunks = registry.get("chunks", {})
+    if set(selectors) != set(CHUNK_ORDER):
+        fail(f"{profile_id}: selectors must provide exactly the canonical C0–C6 chunks.")
+    if selectors.get("C0_identity_invariant") != "all":
+        fail(f"{profile_id}: C0 must be exported in full.")
+    if not isinstance(selectors.get("C1_reconstruction_environments"), list):
+        fail(f"{profile_id}: C1 must be an explicit ordered selection.")
+    if selectors.get("C4_k6") not in ("all", "none"):
+        fail(f"{profile_id}: K6 must be complete or absent.")
+
+    resolved = []
+    resolved_chunks = {}
+    seen = set()
+    for chunk_name in CHUNK_ORDER:
+        source_terms = chunks.get(chunk_name, {}).get("terms")
+        if not isinstance(source_terms, list):
+            fail(f"{profile_id}: canonical chunk {chunk_name} is missing.")
+        selector = selectors[chunk_name]
+        if selector == "all":
+            selected = list(source_terms)
+        elif selector == "none":
+            selected = []
+        elif isinstance(selector, list):
+            selected = selector
+            if chunk_name != "C2_work_positioning":
+                positions = [
+                    source_terms.index(term) if term in source_terms else -1
+                    for term in selected
+                ]
+                if (
+                    -1 in positions
+                    or positions != sorted(positions)
+                    or len(set(selected)) != len(selected)
+                ):
+                    fail(
+                        f"{profile_id}: {chunk_name} must preserve canonical order "
+                        "and contain unique canonical terms."
+                    )
+            elif len({term.casefold() for term in selected}) != len(selected):
+                fail(f"{profile_id}: C2 contains duplicate terms.")
+        else:
+            fail(f"{profile_id}: invalid selector for {chunk_name}.")
+
+        resolved_chunks[chunk_name] = selected
+        for term in selected:
+            folded = term.casefold()
+            if folded not in seen:
+                seen.add(folded)
+                resolved.append(term)
+
+    if "resolved_keywords" in profile:
+        fail(f"{profile_id}: derived profiles must resolve from selectors, not stored keyword copies.")
+    c0 = set(chunks["C0_identity_invariant"]["terms"])
+    required_rationales = set(resolved) - c0
+    rationales = profile.get("term_rationales", {})
+    if (
+        set(rationales) != required_rationales
+        or any(not str(rationales.get(term, "")).strip() for term in required_rationales)
+    ):
+        missing = sorted(required_rationales - set(rationales))
+        extra = sorted(set(rationales) - required_rationales)
+        fail(f"{profile_id}: rationale coverage mismatch; missing={missing}; extra={extra}.")
+    if len(resolved) != len({term.casefold() for term in resolved}):
+        fail(f"{profile_id}: resolved keyword sequence contains duplicates.")
+
+    return {
+        "profile": profile,
+        "keywords": resolved,
+        "chunks": resolved_chunks,
+    }
+
+
+def load_page_surface_profiles(site_url: str, records: list) -> tuple[dict, dict, str, str, dict]:
+    config_path = ROOT / "metadata" / "artifact-metadata.json"
+    if not config_path.is_file():
+        fail("Missing metadata/artifact-metadata.json.")
+    artifact_config = json.loads(config_path.read_text(encoding="utf-8"))
+    registry_source = artifact_config.get("registry_source", {})
+    registry, registry_text, fetched_from = load_canonical_keyword_registry(registry_source)
+
+    artifacts = artifact_config.get("artifacts", [])
+    if len(artifacts) != len(records) + 1:
+        fail(
+            f"Expected one homepage profile plus {len(records)} report profiles; "
+            f"found {len(artifacts)}."
+        )
+    by_page_key = {}
+    resolved_artifacts = []
+    expected = {
+        "dio-to-dio-home": {
+            "path": "index.html",
+            "url": site_url,
+            "role": "homepage",
+        }
+    }
+    for record in records:
+        expected[record["id"]] = {
+            "path": record["html"],
+            "url": urljoin(site_url, record["html"]),
+            "role": "report",
+        }
+
+    for artifact in artifacts:
+        page_key = artifact.get("page_key")
+        if not page_key or page_key in by_page_key:
+            fail(f"Missing or duplicate page_key in artifact metadata: {page_key!r}.")
+        if page_key not in expected:
+            fail(f"Unknown DIO to DIO page_key in artifact metadata: {page_key!r}.")
+        expected_page = expected[page_key]
+        paths = artifact.get("paths")
+        urls = artifact.get("urls")
+        if paths != [expected_page["path"]] or urls != [expected_page["url"]]:
+            fail(f"{artifact.get('id')}: page path/URL does not match the source catalogue.")
+        if not artifact.get("keyword_profile_id"):
+            fail(f"{artifact.get('id')}: missing keyword_profile_id.")
+
+        profile_id = artifact["keyword_profile_id"]
+        profile = registry.get("surface_profiles", {}).get(profile_id)
+        projection = resolve_surface_profile(registry, profile_id, profile)
+        surface = profile.get("surface", {})
+        if (
+            surface.get("repository") != REPOSITORY
+            or surface.get("page_key") != page_key
+            or surface.get("paths") != paths
+            or surface.get("urls") != urls
+        ):
+            fail(f"{profile_id}: canonical surface identity does not match local page metadata.")
+
+        page_entity_id = expected_page["url"] + (
+            "#webpage" if expected_page["role"] == "report" else "#webpage"
+        )
+        item = {
+            **artifact,
+            "status": profile["status"],
+            "scope": profile["scope"],
+            "purpose": profile.get("purpose", ""),
+            "keyword_chunks": projection["chunks"],
+            "keywords": projection["keywords"],
+            "keyword_rationales": profile.get("term_rationales", {}),
+            "schema_entity_id": page_entity_id,
+            "in_language": "en",
+        }
+        by_page_key[page_key] = item
+        resolved_artifacts.append(item)
+
+    if set(by_page_key) != set(expected):
+        missing = sorted(set(expected) - set(by_page_key))
+        extra = sorted(set(by_page_key) - set(expected))
+        fail(f"Page profile inventory mismatch; missing={missing}; extra={extra}.")
+
+    registry_sha256 = hashlib.sha256(registry_text.encode("utf-8")).hexdigest()
+    registry_info = {
+        "repository": registry_source["repository"],
+        "file": registry_source["file"],
+        "ref": registry_source["ref"],
+        "registry_version": registry["registry_version"],
+        "status": registry["status"],
+        "sha256": registry_sha256,
+        "fetched_from": fetched_from,
+        "canonical_discovery": registry_source.get("registry_discovery"),
+        "resolved_snapshot_path": REGISTRY_SNAPSHOT_FILENAME,
+    }
+    manifest = {
+        "schema_version": "1.0.0",
+        "site": artifact_config.get("site", {}),
+        "author": artifact_config.get("author", {}),
+        "keyword_registry": registry_info,
+        "artifacts": resolved_artifacts,
+    }
+    return by_page_key, manifest, registry_text, REGISTRY_SNAPSHOT_FILENAME, registry_info
+
+
+def upsert_head_metadata(
+    html_text: str,
+    keywords: list[str],
+    profile_id: str,
+    registry_version: str,
+    manifest_url: str,
+) -> str:
+    def upsert_meta(source: str, name: str, value: str) -> str:
+        escaped_name = re.escape(name)
+        pattern = re.compile(
+            rf"<meta\b(?=[^>]*\bname\s*=\s*(['\"]){escaped_name}\1)[^>]*>",
+            re.IGNORECASE,
+        )
+        tag = (
+            f'<meta name="{html.escape(name, quote=True)}" '
+            f'content="{html.escape(value, quote=True)}">'
+        )
+        matches = list(pattern.finditer(source))
+        if len(matches) > 1:
+            fail(f"Duplicate meta name={name!r} in generated page head.")
+        if matches:
+            match = matches[0]
+            return source[:match.start()] + tag + source[match.end():]
+        description = re.search(
+            r"<meta\b(?=[^>]*\bname\s*=\s*(['\"])description\1)[^>]*>",
+            source,
+            re.IGNORECASE,
+        )
+        if not description:
+            fail(f"Cannot add {name!r}: page has no unique meta description.")
+        return source[:description.end()] + "\n  " + tag + source[description.end():]
+
+    html_text = upsert_meta(html_text, "keywords", ", ".join(keywords))
+    html_text = upsert_meta(html_text, "dio-odi:keyword-profile", profile_id)
+    html_text = upsert_meta(html_text, "dio-odi:keyword-registry-version", registry_version)
+
+    href = html.escape(manifest_url, quote=True)
+    link_pattern = re.compile(
+        r"<link\b(?=[^>]*\brel\s*=\s*(['\"])describedby\1)[^>]*>",
+        re.IGNORECASE,
+    )
+    describedby = list(link_pattern.finditer(html_text))
+    link_tag = (
+        '<link rel="describedby" type="application/json" '
+        f'href="{href}" title="Resolved page metadata and keyword profiles">'
+    )
+    if len(describedby) > 1:
+        fail("Duplicate rel=describedby links in generated page head.")
+    if describedby:
+        match = describedby[0]
+        html_text = html_text[:match.start()] + link_tag + html_text[match.end():]
+    else:
+        head_end = re.search(r"</head\s*>", html_text, re.IGNORECASE)
+        if not head_end:
+            fail("Cannot add resolved metadata link: no closing </head>.")
+        html_text = html_text[:head_end.start()] + link_tag + "\n  " + html_text[head_end.start():]
+    return html_text
+
+
+class JsonLdCollector(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.payloads = []
+        self.capture = False
+        self.buffer = []
+
+    def handle_starttag(self, tag: str, attrs: list) -> None:
+        if tag.lower() == "script" and dict(attrs).get("type", "").lower() == "application/ld+json":
+            self.capture = True
+            self.buffer = []
+
+    def handle_data(self, data: str) -> None:
+        if self.capture:
+            self.buffer.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() == "script" and self.capture:
+            self.payloads.append("".join(self.buffer).strip())
+            self.capture = False
+            self.buffer = []
+
+
+def validate_published_page_metadata(
+    page_html: str,
+    page_key: str,
+    profile: dict,
+    registry_version: str,
+    manifest_url: str,
+    dataset_keywords: list,
+) -> None:
+    def meta_values(name: str) -> list[str]:
+        result = []
+        for match in re.finditer(r"<meta\b[^>]*>", page_html, re.IGNORECASE):
+            tag = match.group(0)
+            name_match = re.search(r"\bname\s*=\s*(['\"])(.*?)\1", tag, re.IGNORECASE)
+            content_match = re.search(r"\bcontent\s*=\s*(['\"])(.*?)\1", tag, re.IGNORECASE)
+            if name_match and content_match and name_match.group(2).lower() == name.lower():
+                result.append(html.unescape(content_match.group(2)))
+        return result
+
+    expected_keywords = profile["keywords"]
+    if meta_values("keywords") != [", ".join(expected_keywords)]:
+        fail(f"{page_key}: HTML meta keywords differ from the resolved canonical profile.")
+    if meta_values("dio-odi:keyword-profile") != [profile["keyword_profile_id"]]:
+        fail(f"{page_key}: HTML keyword profile identifier is missing or incorrect.")
+    if meta_values("dio-odi:keyword-registry-version") != [registry_version]:
+        fail(f"{page_key}: HTML keyword registry version is missing or incorrect.")
+    if manifest_url not in page_html or 'rel="describedby"' not in page_html:
+        fail(f"{page_key}: page does not link to the resolved keyword metadata manifest.")
+
+    parser = JsonLdCollector()
+    parser.feed(page_html)
+    parser.close()
+    graphs = []
+    for payload in parser.payloads:
+        try:
+            document = json.loads(payload)
+        except json.JSONDecodeError as exc:
+            fail(f"{page_key}: malformed embedded JSON-LD: {exc}")
+        if isinstance(document, dict):
+            graphs.extend(document.get("@graph", []))
+            if "@graph" not in document:
+                graphs.append(document)
+
+    matching = [
+        node for node in graphs
+        if isinstance(node, dict) and node.get("@id") == profile["schema_entity_id"]
+    ]
+    if len(matching) != 1:
+        fail(f"{page_key}: expected exactly one primary Schema.org page entity in JSON-LD.")
+    if matching[0].get("keywords") != expected_keywords:
+        fail(f"{page_key}: Schema.org page keywords differ from the canonical profile.")
+
+    datasets = [node for node in graphs if isinstance(node, dict) and node.get("@type") == "Dataset"]
+    if len(datasets) != 1 or datasets[0].get("keywords") != dataset_keywords:
+        fail(f"{page_key}: page-surface metadata changed the independent Dataset keyword profile.")
+    report_works = [
+        node for node in graphs
+        if isinstance(node, dict) and isinstance(node.get("@id"), str) and node["@id"].endswith("#report")
+    ]
+    if any("keywords" in node for node in report_works):
+        fail(f"{page_key}: page-surface keywords leaked into a report CreativeWork entity.")
+
 
 def render_markdown(source: Path, filter_path: Path) -> str:
     filters = [filter_path]
@@ -198,7 +587,7 @@ def distribution_records(records: list, site_url: str, integrity_records: list) 
     return distributions
 
 
-def report_schema_nodes(record: dict, site_url: str, config: dict) -> tuple[dict, dict]:
+def report_schema_nodes(record: dict, site_url: str, config: dict, keyword_profiles: dict | None = None) -> tuple[dict, dict]:
     page_url = urljoin(site_url, record["html"])
     page_id = page_url + "#webpage"
     work_id = page_url + "#report"
@@ -215,6 +604,11 @@ def report_schema_nodes(record: dict, site_url: str, config: dict) -> tuple[dict
         "isPartOf": {"@id": website_id},
         "mainEntity": {"@id": work_id}
     }
+    if keyword_profiles is not None:
+        page_profile = keyword_profiles.get(record["id"])
+        if page_profile is None:
+            fail(f"Missing page keyword profile for report: {record['id']}")
+        page["keywords"] = page_profile["keywords"]
     work = {
         "@type": "CreativeWork",
         "@id": work_id,
@@ -230,7 +624,7 @@ def report_schema_nodes(record: dict, site_url: str, config: dict) -> tuple[dict
     return page, work
 
 
-def build_jsonld(config: dict, site_url: str, records: list, integrity_records: list, current_record: dict | None = None) -> dict:
+def build_jsonld(config: dict, site_url: str, records: list, integrity_records: list, current_record: dict | None = None, keyword_profiles: dict | None = None) -> dict:
     person = dict(config["person"])
     website_id = site_url + "#website"
     project_id = site_url + "#project"
@@ -288,7 +682,7 @@ def build_jsonld(config: dict, site_url: str, records: list, integrity_records: 
     if current_record is None:
         report_pages = []
         for record in records:
-            page, work = report_schema_nodes(record, site_url, config)
+            page, work = report_schema_nodes(record, site_url, config, keyword_profiles)
             graph.extend([page, work])
             report_pages.append({"@id": page["@id"]})
         graph.append({
@@ -304,8 +698,13 @@ def build_jsonld(config: dict, site_url: str, records: list, integrity_records: 
             "author": person_ref,
             "publisher": person_ref
         })
+        if keyword_profiles is not None:
+            home_profile = keyword_profiles.get("dio-to-dio-home")
+            if home_profile is None:
+                fail("Missing page keyword profile for the DIO to DIO homepage.")
+            graph[-1]["keywords"] = home_profile["keywords"]
     else:
-        page, work = report_schema_nodes(current_record, site_url, config)
+        page, work = report_schema_nodes(current_record, site_url, config, keyword_profiles)
         graph.extend([page, work])
 
     for item in distributions:
@@ -505,7 +904,7 @@ def report_header_navigation() -> str:
     return desktop + "\n      " + mobile
 
 
-def report_page(record: dict, index: int, total: int, html_fragment: str, site_url: str, structured_data: dict, integrity_records: list, all_records: list) -> str:
+def report_page(record: dict, index: int, total: int, html_fragment: str, site_url: str, structured_data: dict, integrity_records: list, all_records: list, keyword_profiles: dict, registry_version: str, manifest_url: str) -> str:
     model = html.escape(record["model"])
     title = html.escape(record["title"])
     description = html.escape(record["description"])
@@ -515,7 +914,15 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
     page_url = urljoin(site_url, record["html"])
     toc_markup = report_toc_markup(html_fragment, page_url)
     canonical = html.escape(page_url, quote=True)
-    schema_markup = jsonld_script(build_jsonld(structured_data, site_url, all_records, integrity_records, current_record=record))
+    page_profile = keyword_profiles.get(record["id"])
+    if page_profile is None:
+        fail(f"Missing keyword surface profile for report {record['id']}.")
+    schema_markup = jsonld_script(
+        build_jsonld(
+            structured_data, site_url, all_records, integrity_records,
+            current_record=record, keyword_profiles=keyword_profiles
+        )
+    )
     pdf_link = html.escape(f"../sources/pdf/{Path(record['pdf']).name}", quote=True)
     md_link = html.escape(f"../sources/markdown/{Path(record['markdown']).name}", quote=True)
     return f'''<!doctype html>
@@ -525,12 +932,16 @@ def report_page(record: dict, index: int, total: int, html_fragment: str, site_u
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <meta name="description" content="{description}">
+  <meta name="keywords" content="{html.escape(", ".join(page_profile["keywords"]), quote=True)}">
+  <meta name="dio-odi:keyword-profile" content="{html.escape(page_profile["keyword_profile_id"], quote=True)}">
+  <meta name="dio-odi:keyword-registry-version" content="{html.escape(registry_version, quote=True)}">
   <meta property="og:type" content="article">
   <meta property="og:url" content="{canonical}">
   <meta property="og:site_name" content="DIO to DIO">
   <meta property="og:title" content="{title}">
   <meta property="og:description" content="{description}">
   <link rel="canonical" href="{canonical}">
+  <link rel="describedby" type="application/json" href="{html.escape(manifest_url, quote=True)}" title="Resolved page metadata and keyword profiles">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="stylesheet" href="../assets/css/site.css">
   <script src="../assets/js/site.js" defer></script>
@@ -636,6 +1047,10 @@ def main() -> None:
     (OUT / "analyses").mkdir(parents=True)
 
     site_url = metadata.get("project", {}).get("site_url", "https://dan-beranek.github.io/dio-to-dio/")
+    keyword_profiles, surface_manifest, registry_text, registry_snapshot_filename, registry_info = (
+        load_page_surface_profiles(site_url, records)
+    )
+    manifest_url = urljoin(site_url, MANIFEST_FILENAME)
     for index, record in enumerate(records, start=1):
         source = ROOT / safe_relative(record["markdown"])
         fragment = render_markdown(source, filter_path)
@@ -644,7 +1059,14 @@ def main() -> None:
             fail(f"Rendered page path must end in .html: {output_rel}")
         output_path = OUT / output_rel
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(report_page(record, index, len(records), fragment, site_url, structured_data, integrity_records, records), encoding="utf-8")
+        output_path.write_text(
+            report_page(
+                record, index, len(records), fragment, site_url, structured_data,
+                integrity_records, records, keyword_profiles,
+                registry_info["registry_version"], manifest_url
+            ),
+            encoding="utf-8"
+        )
 
     index_html = (ROOT / "index.html").read_text(encoding="utf-8")
     if CATALOGUE_START not in index_html or CATALOGUE_END not in index_html:
@@ -652,7 +1074,19 @@ def main() -> None:
     cards = "\n".join(card(record, index, len(records)) for index, record in enumerate(records, start=1))
     replacement = f"{CATALOGUE_START}\n<div class=\"analysis-grid\">\n{cards}\n</div>\n{CATALOGUE_END}"
     index_html = re.sub(re.escape(CATALOGUE_START) + r".*?" + re.escape(CATALOGUE_END), lambda _: replacement, index_html, flags=re.S)
-    home_schema = jsonld_script(build_jsonld(structured_data, site_url, records, integrity_records))
+    home_profile = keyword_profiles.get("dio-to-dio-home")
+    if home_profile is None:
+        fail("Missing DIO to DIO homepage surface profile.")
+    index_html = upsert_head_metadata(
+        index_html, home_profile["keywords"], home_profile["keyword_profile_id"],
+        registry_info["registry_version"], manifest_url
+    )
+    home_schema = jsonld_script(
+        build_jsonld(
+            structured_data, site_url, records, integrity_records,
+            keyword_profiles=keyword_profiles
+        )
+    )
     if "</head>" not in index_html:
         fail("index.html is missing its closing head element.")
     index_html = index_html.replace("</head>", home_schema + "</head>", 1)
@@ -691,6 +1125,28 @@ def main() -> None:
         "sources": integrity_records
     }, indent=2) + "\n", encoding="utf-8")
 
+    # Preserve the exact registry bytes used for this build; the manifest points to
+    # that immutable build input and records its SHA-256 digest.
+    (OUT / MANIFEST_FILENAME).write_text(
+        json.dumps(surface_manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8"
+    )
+    (OUT / REGISTRY_SNAPSHOT_FILENAME).write_text(registry_text, encoding="utf-8")
+
+    dataset_keywords = structured_data["dataset"]["keywords"]
+    for artifact in surface_manifest["artifacts"]:
+        page_path = OUT / safe_relative(artifact["paths"][0])
+        if not page_path.is_file():
+            fail(f"Expected generated page is missing: {artifact['paths'][0]}")
+        validate_published_page_metadata(
+            page_path.read_text(encoding="utf-8"),
+            artifact["page_key"],
+            artifact,
+            registry_info["registry_version"],
+            manifest_url,
+            dataset_keywords,
+        )
+
     dcat_jsonld, dcat_turtle = build_dcat_exports(structured_data, site_url, records, integrity_records)
     (OUT / "dataset.jsonld").write_text(dcat_jsonld, encoding="utf-8")
     (OUT / "dataset.ttl").write_text(dcat_turtle, encoding="utf-8")
@@ -710,7 +1166,9 @@ def main() -> None:
         "## Machine-readable dataset metadata",
         f"- DCAT JSON-LD: {urljoin(site_url, 'dataset.jsonld')}",
         f"- DCAT Turtle: {urljoin(site_url, 'dataset.ttl')}",
-        f"- Source integrity manifest: {urljoin(site_url, 'source-integrity.json')}", "",
+        f"- Source integrity manifest: {urljoin(site_url, 'source-integrity.json')}",
+        f"- Resolved page metadata manifest: {manifest_url}",
+        f"- Canonical keyword registry snapshot used by this build: {urljoin(site_url, REGISTRY_SNAPSHOT_FILENAME)}", "",
         "## Reports"
     ]
     for record in records:

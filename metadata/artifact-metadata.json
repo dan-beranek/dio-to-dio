@@ -1,0 +1,180 @@
+{
+  "schema_version": "1.0.0",
+  "registry_source": {
+    "repository": "dan-beranek/dio-odi-reference-model",
+    "file": "metadata/keywords.json",
+    "ref": "main",
+    "minimum_registry_version": "2.10.0",
+    "compatible_major": 2,
+    "status_required": "canonical-approved",
+    "snapshot_path": "metadata/keyword-registry.snapshot.json",
+    "registry_discovery": "https://vocab.danielberanek.cz/metadata/README.md",
+    "policy": "Resolve approved page-specific surface profiles from the canonical DIO/ODI registry. Accept canonical-approved compatible 2.x releases at or above 2.10.0; fall back to the committed 2.10.0 snapshot when the canonical source cannot be fetched. Stop on malformed or incompatible registry versions."
+  },
+  "site": {
+    "id": "https://dan-beranek.github.io/dio-to-dio/#website",
+    "url": "https://dan-beranek.github.io/dio-to-dio/",
+    "name": "DIO to DIO",
+    "in_language": "en",
+    "artifact_type": "author-led-reflexive-research-portfolio",
+    "artifact_role": "Public portfolio of eleven distinct author-led LLM analyses of the distributed DIO/ODI ecosystem; the reports are not ranked, harmonized or synthesized.",
+    "build_entrypoint": "scripts/build.py",
+    "metadata_output": "resolved-artifact-metadata.json",
+    "resolved_registry_output": "keyword-registry.resolved.json",
+    "hosting": "GitHub Pages"
+  },
+  "author": {
+    "id": "https://danielberanek.cz/#person",
+    "name": "Daniel Beránek",
+    "url": "https://danielberanek.cz/",
+    "same_as": [
+      "https://orcid.org/0009-0004-0050-0264"
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "dio-to-dio-home",
+      "page_key": "dio-to-dio-home",
+      "keyword_profile_id": "dio-to-dio-home",
+      "paths": [
+        "index.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/"
+      ],
+      "artifact_role": "Project landing page introducing the common reflexive DIO/ODI reconstruction question and the distinct model-specific analytical reports."
+    },
+    {
+      "id": "dio-to-dio-brave-ai",
+      "page_key": "brave-ai",
+      "keyword_profile_id": "dio-to-dio-brave-ai",
+      "paths": [
+        "analyses/brave-ai.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/analyses/brave-ai.html"
+      ],
+      "artifact_role": "Individual Brave AI report page; its keyword profile reflects this report's own analysis, observation boundary and graph approach."
+    },
+    {
+      "id": "dio-to-dio-chatgpt",
+      "page_key": "chatgpt",
+      "keyword_profile_id": "dio-to-dio-chatgpt",
+      "paths": [
+        "analyses/chatgpt.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/analyses/chatgpt.html"
+      ],
+      "artifact_role": "Individual ChatGPT report page; its keyword profile reflects this report's own analysis, observation boundary and graph approach."
+    },
+    {
+      "id": "dio-to-dio-deepseek",
+      "page_key": "deepseek",
+      "keyword_profile_id": "dio-to-dio-deepseek",
+      "paths": [
+        "analyses/deepseek.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/analyses/deepseek.html"
+      ],
+      "artifact_role": "Individual DeepSeek report page; its keyword profile reflects this report's own analysis, observation boundary and graph approach."
+    },
+    {
+      "id": "dio-to-dio-gemini-deep-research",
+      "page_key": "gemini-deep-research",
+      "keyword_profile_id": "dio-to-dio-gemini-deep-research",
+      "paths": [
+        "analyses/gemini-deep-research.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/analyses/gemini-deep-research.html"
+      ],
+      "artifact_role": "Individual Gemini Deep Research report page; its keyword profile reflects this report's own analysis, observation boundary and graph approach."
+    },
+    {
+      "id": "dio-to-dio-gemini-pro-latest",
+      "page_key": "gemini-pro-latest",
+      "keyword_profile_id": "dio-to-dio-gemini-pro-latest",
+      "paths": [
+        "analyses/gemini-pro-latest.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/analyses/gemini-pro-latest.html"
+      ],
+      "artifact_role": "Individual Gemini Pro Latest report page; its keyword profile reflects this report's own analysis, observation boundary and graph approach."
+    },
+    {
+      "id": "dio-to-dio-leo-ai",
+      "page_key": "leo-ai",
+      "keyword_profile_id": "dio-to-dio-leo-ai",
+      "paths": [
+        "analyses/leo-ai.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/analyses/leo-ai.html"
+      ],
+      "artifact_role": "Individual Leo AI report page; its keyword profile reflects this report's own analysis, observation boundary and graph approach."
+    },
+    {
+      "id": "dio-to-dio-lumo",
+      "page_key": "lumo",
+      "keyword_profile_id": "dio-to-dio-lumo",
+      "paths": [
+        "analyses/lumo.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/analyses/lumo.html"
+      ],
+      "artifact_role": "Individual Lumo report page; its keyword profile reflects this report's own analysis, observation boundary and graph approach."
+    },
+    {
+      "id": "dio-to-dio-mistral",
+      "page_key": "mistral",
+      "keyword_profile_id": "dio-to-dio-mistral",
+      "paths": [
+        "analyses/mistral.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/analyses/mistral.html"
+      ],
+      "artifact_role": "Individual Mistral report page; its keyword profile reflects this report's own analysis, observation boundary and graph approach."
+    },
+    {
+      "id": "dio-to-dio-qwen",
+      "page_key": "qwen",
+      "keyword_profile_id": "dio-to-dio-qwen",
+      "paths": [
+        "analyses/qwen.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/analyses/qwen.html"
+      ],
+      "artifact_role": "Individual Qwen report page; its keyword profile reflects this report's own analysis, observation boundary and graph approach."
+    },
+    {
+      "id": "dio-to-dio-grok",
+      "page_key": "grok",
+      "keyword_profile_id": "dio-to-dio-grok",
+      "paths": [
+        "analyses/grok.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/analyses/grok.html"
+      ],
+      "artifact_role": "Individual Grok report page; its keyword profile reflects this report's own analysis, observation boundary and graph approach."
+    },
+    {
+      "id": "dio-to-dio-claude",
+      "page_key": "claude",
+      "keyword_profile_id": "dio-to-dio-claude",
+      "paths": [
+        "analyses/claude.html"
+      ],
+      "urls": [
+        "https://dan-beranek.github.io/dio-to-dio/analyses/claude.html"
+      ],
+      "artifact_role": "Individual Claude Sonnet 5.5 (Extra Effort) report page; its keyword profile reflects this report's own analysis, observation boundary and graph approach."
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+name: Validate DIO to DIO frontend
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/**"
+      - "metadata/**"
+      - "reports/markdown/**"
+      - "reports/pdf/**"
+      - "scripts/**"
+      - ".github/workflows/**"
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/**"
+      - "metadata/**"
+      - "reports/markdown/**"
+      - "reports/pdf/**"
+      - "scripts/**"
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes pandoc
+      - name: Compile the Python builder
+        run: python3 -m py_compile scripts/build.py
+      - name: Generate and validate the static website
+        run: python3 scripts/build.py
+      - name: Check patch whitespace
+        run: git diff --check
