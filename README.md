@@ -33,6 +33,8 @@ For the framework's canonical terminology and current machine-readable reference
 - Shared Schema.org JSON-LD identity and Dataset metadata are maintained in `metadata/structured-data.json` and rendered consistently into the landing page and all report pages.
 - The build emits a DCAT 3 dataset catalogue as `dataset.jsonld` and `dataset.ttl`, with explicit distributions, media types, canonical DIO/ODI SKOS subject URIs, and SHA-256 checksums for the original Markdown/PDF sources.
 - The portfolio provides a common publishing format, not a common interpretation.
+- HTML page-level keyword profiles are resolved from the canonical DIO/ODI C0–C6 registry; each report has its own profile. These page profiles do not rewrite the source Markdown/PDF keyword metadata or the shared Dataset keyword list.
+- The build emits `resolved-artifact-metadata.json` and `keyword-registry.resolved.json` to record the exact approved registry version, SHA-256, profile selectors, rationales, and resolved per-page keyword sequences.
 - Any future meta-analysis would have its own research question, method, and standalone publication.
 
 ## Repository structure
