@@ -704,7 +704,7 @@ html { scroll-padding-top: 6rem; }
 
 
 /* DIO Web Design System v0.1.1 — typography pilot */
-:root { --ink: var(--dio-color-text); --muted: var(--dio-color-text-secondary); }
+:root { --muted: var(--dio-color-text-secondary); }
 body { color: var(--dio-color-text); }
 .content p, .lead, .analysis-card p, .design-grid p, .report-description-main > p:last-child, .report-body { color: var(--dio-color-text); }
 .report-body p, .report-body li, .report-body td, .report-body th { color: var(--dio-color-text); }
