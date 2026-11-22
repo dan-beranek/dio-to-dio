@@ -1,3 +1,4 @@
+@import url("design-system/dio-core.css");
 :root {
   --ink: #080b12;
   --ink-2: #121722;
@@ -700,3 +701,18 @@ html { scroll-padding-top: 6rem; }
 @media print {
   .report-toc { display: none !important; }
 }
+
+
+/* DIO Web Design System v0.1.1 — typography pilot */
+:root { --muted: var(--dio-color-text-secondary); }
+body { color: var(--dio-color-text); }
+.content p, .lead, .analysis-card p, .design-grid p, .report-description-main > p:last-child, .report-body { color: var(--dio-color-text); }
+.report-body p, .report-body li, .report-body td, .report-body th { color: var(--dio-color-text); }
+.analysis-card-meta, .hero-meta, .report-facts dt, .report-rendered-heading p:last-child, .report-body .source-title-detail { font-size: max(0.8125rem, 13px); }
+.eyebrow, .principle-no { font-size: max(0.75rem, 12px); }
+.analysis-card-links a, .report-source-links a, .resource-links a, .mobile-resource-links a { font-size: max(0.875rem, 14px); }
+.report-body table { font-size: 0.875rem; line-height: 1.55; }
+.report-body pre { font-size: 0.8125rem; }
+.report-toc-level-3 > a { font-size: 0.8125rem; }
+.footer-inner { font-size: 0.8125rem; }
+@media (max-width: 760px) { .report-body table { font-size: 0.8125rem; } }
