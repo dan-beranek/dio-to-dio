@@ -82,7 +82,7 @@ jobs:
           registry = manifest.get("keyword_registry", {})
           version = tuple(int(part) for part in registry.get("registry_version", "").split("."))
           assert registry.get("status") == "canonical-approved", "Keyword registry is not canonical-approved."
-          assert len(version) == 3 and version[0] == 2 and version >= (2, 10, 0), f"Unsupported keyword registry version: {registry.get(\"registry_version\")!r}"
+          assert len(version) == 3 and version[0] == 2 and version >= (2, 10, 0), f"Unsupported keyword registry version: {registry.get('registry_version')!r}"
           assert any(item.get("page_key") == "claude" for item in manifest.get("artifacts", [])), "Claude report is missing from the resolved manifest."
-          print(f"Verified canonical keyword registry {registry[\"registry_version\"]} and Claude report.")
+          print(f"Verified canonical keyword registry {registry['registry_version']} and Claude report.")
           '
