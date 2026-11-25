@@ -16,12 +16,14 @@ The project-level research question is:
 
 ## Canonical DIO/ODI reference resources
 
-For the framework's canonical terminology and current machine-readable reference state, consult the separately maintained DIO/ODI Reference Model. Its current archived release is v0.8.0 and integrates the append-only Semantic Change Feed (SCF) as a Reference Model component. These project-level links identify the authoritative framework resources; they do not harmonize or replace the distinct interpretations and conclusions in the individual reports.
+For the framework's canonical terminology and current machine-readable reference state, consult the separately maintained DIO/ODI Reference Model. Its current archived release is v0.9.0 and integrates the Semantic Change Feed snapshot v0.1.1 (45 events through 9 November 2026). The separately maintained live feed is v0.1.14, with 63 documented events through 25 November 2026. The Research Genealogy records source-linked research objects, processes and thematic threads; Genealogical Foundations provides an interpretive account of the historical, professional, intellectual and methodological lines documented there. These resources provide canonical terminology and research provenance; they do not harmonize, constrain or replace the distinct analytical choices and conclusions in the individual reports.
 
-- **Archived Reference Model v0.8.0:** https://doi.org/10.5281/zenodo.24056601
+- **Archived Reference Model v0.9.0:** https://doi.org/10.5281/zenodo.24085589
 - **Reference Model source repository:** https://github.com/dan-beranek/dio-odi-reference-model/
-- **Reference Vocabulary:** https://vocab.danielberanek.cz/dio-odi/
-- **Semantic Change Feed:** https://vocab.danielberanek.cz/semantic-change-feed/
+- **Reference Vocabulary v0.2.2:** https://vocab.danielberanek.cz/dio-odi/
+- **Research Genealogy:** https://vocab.danielberanek.cz/research-genealogy/
+- **Genealogical Foundations:** https://vocab.danielberanek.cz/research-genealogy/foundations/
+- **Live Semantic Change Feed:** https://vocab.danielberanek.cz/semantic-change-feed/
 
 ## Publication principles
 
